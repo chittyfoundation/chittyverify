@@ -46,6 +46,18 @@ Each table includes proper foreign key relationships, timestamps, and JSONB fiel
 - **Property Tax Integration**: Specialized Cook County property tax scraping and verification
 - **AI Analysis**: Integration with multiple AI systems for evidence analysis
 - **Trust Scoring**: Dynamic trust calculation based on evidence quality and verification
+- **Blockchain Integration**: Advanced minting controls with validation, trust analysis, and consent management
+
+### Advanced Blockchain Services (January 2025)
+Comprehensive ChittyChain blockchain infrastructure integrated:
+
+1. **Artifact Minting Service** (`artifact-minting.ts`): Complete evidence minting workflow with validation, consent, and blockchain recording
+2. **Trust Layer** (`trust-layer.ts`): Evidence tier analysis, source weight calculation, and trust score verification
+3. **Validation Service** (`validation-service.ts`): Multi-level evidence validation with integrity checks and error recovery
+4. **Smart Contracts**: Ethereum-based contracts for evidence registry, property escrow, token management, and revocation
+5. **Consent Layer**: User verification system requiring explicit consent before immutable blockchain storage
+6. **Dependency Resolution**: Artifact dependency management ensuring proper minting order and reference integrity
+7. **Error Recovery**: Blockchain error handling and recovery with backup/restore capabilities
 
 ### Backend API Structure
 RESTful API endpoints organized by resource:
@@ -81,7 +93,9 @@ The system integrates with multiple external services:
 - **GitHub**: Version control for evidence
 - **Property Tax Systems**: Cook County assessor/treasurer data
 - **AI Services**: Claude, OpenAI for analysis
-- **Blockchain**: Custom ChittyChain for immutable records
+- **Blockchain**: Custom ChittyChain with Ethereum smart contracts for immutable records
+- **MCP Servers**: Integrated coordinators for Wave, Plaid, email bill ingestion, and secure AI execution
+- **Oracle Services**: County clerk API integration for real-time property record updates
 
 ## External Dependencies
 

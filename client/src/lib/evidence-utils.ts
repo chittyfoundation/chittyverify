@@ -1,4 +1,7 @@
 import { type Evidence, type Case, type AnalysisResult } from "@shared/schema";
+import { artifactMintingService } from './blockchain/artifact-minting';
+import { trustLayer } from './blockchain/trust-layer';
+import { validationService } from './blockchain/validation-service';
 
 export interface EvidenceMetrics {
   totalCount: number;
