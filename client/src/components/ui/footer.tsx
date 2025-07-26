@@ -76,10 +76,8 @@ export function Footer() {
             <ul className="space-y-2 text-sm text-blue-200">
               {platformLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href}>
-                    <a className="hover:text-white transition-colors cursor-pointer">
-                      {link.label}
-                    </a>
+                  <Link href={link.href} className="hover:text-white transition-colors cursor-pointer">
+                    {link.label}
                   </Link>
                 </li>
               ))}
@@ -92,10 +90,8 @@ export function Footer() {
             <ul className="space-y-2 text-sm text-blue-200">
               {resourceLinks.map((link) => (
                 <li key={link.href}>
-                  <Link href={link.href}>
-                    <a className="hover:text-white transition-colors cursor-pointer">
-                      {link.label}
-                    </a>
+                  <Link href={link.href} className="hover:text-white transition-colors cursor-pointer">
+                    {link.label}
                   </Link>
                 </li>
               ))}

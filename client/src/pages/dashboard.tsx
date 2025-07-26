@@ -7,6 +7,7 @@ import { ProgressIndicator } from "@/components/ui/progress-indicator";
 import { CaseOverview } from "@/components/ui/case-overview";
 import { AIAnalysis } from "@/components/ui/ai-analysis";
 import { ChainStatus } from "@/components/ui/chain-status";
+import { ComprehensiveAnalyzer } from "@/components/evidence/ComprehensiveAnalyzer";
 import { Button } from "@/components/ui/button";
 import { Search, Filter, SortAsc } from "lucide-react";
 import { useState } from "react";

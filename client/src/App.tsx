@@ -13,6 +13,7 @@ function Router() {
     <Switch>
       <Route path="/" component={Dashboard} />
       <Route path="/evidence/:id" component={EvidenceDetails} />
+      <Route path="/dashboard" component={Dashboard} />
       <Route path="/upload" component={Upload} />
       <Route component={NotFound} />
     </Switch>

@@ -1,4 +1,8 @@
-import { type User, type InsertUser, type Case, type InsertCase, type Evidence, type InsertEvidence, type PropertyTaxRecord, type InsertPropertyTaxRecord, type PaymentHistory, type InsertPaymentHistory, type AnalysisResult, type InsertAnalysisResult, type BlockchainTransaction, type InsertBlockchainTransaction } from "@shared/schema";
+import { type User, type InsertUser, type Case, type InsertCase, type Evidence, type InsertEvidence, type PropertyTaxRecord, type InsertPropertyTaxRecord, type PaymentHistory, type InsertPaymentHistory, type AnalysisResult, type InsertAnalysisResult, type BlockchainTransaction, type InsertBlockchainTransaction } from "../shared/schema";
+import { drizzle } from "drizzle-orm/neon-http";
+import { neon } from "@neondatabase/serverless";
+import { users, cases, evidence, propertyTaxRecords, paymentHistory, analysisResults, blockchainTransactions } from "../shared/schema";
+import { eq, desc } from "drizzle-orm";
 import { randomUUID } from "crypto";
 
 export interface IStorage {
@@ -40,6 +44,266 @@ export interface IStorage {
   getBlockchainTransactionByEvidenceId(evidenceId: string): Promise<BlockchainTransaction | undefined>;
   createBlockchainTransaction(transaction: InsertBlockchainTransaction): Promise<BlockchainTransaction>;
   updateBlockchainTransaction(id: string, updates: Partial<BlockchainTransaction>): Promise<BlockchainTransaction | undefined>;
+}
+
+export class DatabaseStorage implements IStorage {
+  private db;
+
+  constructor() {
+    if (!process.env.DATABASE_URL) {
+      throw new Error("DATABASE_URL environment variable is required");
+    }
+    
+    const sql = neon(process.env.DATABASE_URL);
+    this.db = drizzle(sql);
+    
+    // Initialize with demo data
+    this.initializeDemoData();
+  }
+
+  private async initializeDemoData() {
+    try {
+      // Check if demo user exists
+      const existingUser = await this.db.select().from(users).where(eq(users.username, 'john.doe')).limit(1);
+      
+      if (existingUser.length === 0) {
+        // Create demo user
+        const [demoUser] = await this.db.insert(users).values({
+          username: "john.doe",
+          password: "hashedpassword",
+          email: "john.doe@example.com",
+          trustScore: 85
+        }).returning();
+
+        // Create demo case
+        const [demoCase] = await this.db.insert(cases).values({
+          name: "Johnson vs. Smith Property Dispute",
+          description: "Property tax assessment dispute for 541 W Addison St",
+          userId: demoUser.id,
+          status: "active",
+          trustScore: 75,
+          totalEvidence: 3,
+          verifiedEvidence: 2,
+          pendingEvidence: 1,
+          mintedEvidence: 1
+        }).returning();
+
+        // Create demo evidence
+        await this.db.insert(evidence).values([
+          {
+            caseId: demoCase.id,
+            artifactId: "ART-2024-001",
+            title: "Property Tax Assessment 2024",
+            description: "Cook County property tax assessment for 541 W Addison St",
+            type: "document",
+            subtype: "tax_assessment",
+            status: "verified",
+            trustScore: 92,
+            metadata: { source: "Cook County Assessor", verified: true }
+          },
+          {
+            caseId: demoCase.id,
+            artifactId: "ART-2024-002", 
+            title: "Bank Statement - Property Payment",
+            description: "January 2024 bank statement showing property tax payment",
+            type: "financial",
+            subtype: "bank_statement",
+            status: "pending",
+            trustScore: 85,
+            metadata: { institution: "First National Bank", account_partial: "****1234" }
+          },
+          {
+            caseId: demoCase.id,
+            artifactId: "ART-2024-003",
+            title: "Legal Notice - Assessment Appeal",
+            description: "Official notice of property tax assessment appeal filing",
+            type: "legal",
+            subtype: "court_filing",
+            status: "minted",
+            trustScore: 98,
+            metadata: { court: "Cook County Circuit Court", filing_number: "24-TX-4567" }
+          }
+        ]);
+
+        console.log('Demo data initialized successfully');
+      }
+    } catch (error) {
+      console.error('Failed to initialize demo data:', error);
+    }
+  }
+
+  // Users
+  async getUser(id: string): Promise<User | undefined> {
+    const result = await this.db.select().from(users).where(eq(users.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const result = await this.db.select().from(users).where(eq(users.username, username)).limit(1);
+    return result[0];
+  }
+
+  async createUser(user: InsertUser): Promise<User> {
+    const [newUser] = await this.db.insert(users).values(user).returning();
+    return newUser;
+  }
+
+  async updateUserTrustScore(id: string, trustScore: number): Promise<User | undefined> {
+    const [updated] = await this.db.update(users)
+      .set({ trustScore })
+      .where(eq(users.id, id))
+      .returning();
+    return updated;
+  }
+
+  // Cases
+  async getCase(id: string): Promise<Case | undefined> {
+    const result = await this.db.select().from(cases).where(eq(cases.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getCasesByUserId(userId: string): Promise<Case[]> {
+    return await this.db.select().from(cases).where(eq(cases.userId, userId)).orderBy(desc(cases.createdAt));
+  }
+
+  async createCase(caseData: InsertCase): Promise<Case> {
+    const [newCase] = await this.db.insert(cases).values(caseData).returning();
+    return newCase;
+  }
+
+  async updateCase(id: string, updates: Partial<Case>): Promise<Case | undefined> {
+    const [updated] = await this.db.update(cases)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(cases.id, id))
+      .returning();
+    return updated;
+  }
+
+  async updateCaseStats(caseId: string): Promise<void> {
+    // Get evidence counts for this case
+    const evidenceList = await this.db.select().from(evidence).where(eq(evidence.caseId, caseId));
+    
+    const totalEvidence = evidenceList.length;
+    const verifiedEvidence = evidenceList.filter(e => e.status === 'verified').length;
+    const pendingEvidence = evidenceList.filter(e => e.status === 'pending').length;
+    const mintedEvidence = evidenceList.filter(e => e.status === 'minted').length;
+    
+    // Calculate average trust score
+    const avgTrustScore = evidenceList.length > 0 
+      ? Math.round(evidenceList.reduce((sum, e) => sum + (e.trustScore || 0), 0) / evidenceList.length)
+      : 0;
+
+    await this.db.update(cases)
+      .set({
+        totalEvidence,
+        verifiedEvidence,
+        pendingEvidence,
+        mintedEvidence,
+        trustScore: avgTrustScore,
+        updatedAt: new Date()
+      })
+      .where(eq(cases.id, caseId));
+  }
+
+  // Evidence
+  async getEvidence(id: string): Promise<Evidence | undefined> {
+    const result = await this.db.select().from(evidence).where(eq(evidence.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getEvidenceByCaseId(caseId: string): Promise<Evidence[]> {
+    return await this.db.select().from(evidence).where(eq(evidence.caseId, caseId)).orderBy(desc(evidence.uploadedAt));
+  }
+
+  async createEvidence(evidenceData: InsertEvidence): Promise<Evidence> {
+    const [newEvidence] = await this.db.insert(evidence).values(evidenceData).returning();
+    
+    // Update case stats
+    await this.updateCaseStats(newEvidence.caseId);
+    
+    return newEvidence;
+  }
+
+  async updateEvidence(id: string, updates: Partial<Evidence>): Promise<Evidence | undefined> {
+    const [updated] = await this.db.update(evidence)
+      .set(updates)
+      .where(eq(evidence.id, id))
+      .returning();
+    
+    if (updated) {
+      await this.updateCaseStats(updated.caseId);
+    }
+    
+    return updated;
+  }
+
+  async updateEvidenceStatus(id: string, status: string, trustScore?: number): Promise<Evidence | undefined> {
+    const updates: Partial<Evidence> = { status };
+    if (trustScore !== undefined) updates.trustScore = trustScore;
+    if (status === 'verified') updates.verifiedAt = new Date();
+    if (status === 'minted') updates.mintedAt = new Date();
+    
+    return await this.updateEvidence(id, updates);
+  }
+
+  // Property Tax Records
+  async getPropertyTaxRecord(id: string): Promise<PropertyTaxRecord | undefined> {
+    const result = await this.db.select().from(propertyTaxRecords).where(eq(propertyTaxRecords.id, id)).limit(1);
+    return result[0];
+  }
+
+  async getPropertyTaxRecordByEvidenceId(evidenceId: string): Promise<PropertyTaxRecord | undefined> {
+    const result = await this.db.select().from(propertyTaxRecords).where(eq(propertyTaxRecords.evidenceId, evidenceId)).limit(1);
+    return result[0];
+  }
+
+  async createPropertyTaxRecord(record: InsertPropertyTaxRecord): Promise<PropertyTaxRecord> {
+    const [newRecord] = await this.db.insert(propertyTaxRecords).values(record).returning();
+    return newRecord;
+  }
+
+  async getPropertyTaxRecordsByPin(pin: string): Promise<PropertyTaxRecord[]> {
+    return await this.db.select().from(propertyTaxRecords).where(eq(propertyTaxRecords.pin, pin)).orderBy(desc(propertyTaxRecords.year));
+  }
+
+  // Payment History
+  async getPaymentHistoryByPropertyTaxRecordId(propertyTaxRecordId: string): Promise<PaymentHistory[]> {
+    return await this.db.select().from(paymentHistory).where(eq(paymentHistory.propertyTaxRecordId, propertyTaxRecordId)).orderBy(desc(paymentHistory.paymentDate));
+  }
+
+  async createPaymentHistory(payment: InsertPaymentHistory): Promise<PaymentHistory> {
+    const [newPayment] = await this.db.insert(paymentHistory).values(payment).returning();
+    return newPayment;
+  }
+
+  // Analysis Results
+  async getAnalysisResultsByEvidenceId(evidenceId: string): Promise<AnalysisResult[]> {
+    return await this.db.select().from(analysisResults).where(eq(analysisResults.evidenceId, evidenceId)).orderBy(desc(analysisResults.createdAt));
+  }
+
+  async createAnalysisResult(analysis: InsertAnalysisResult): Promise<AnalysisResult> {
+    const [newAnalysis] = await this.db.insert(analysisResults).values(analysis).returning();
+    return newAnalysis;
+  }
+
+  // Blockchain Transactions
+  async getBlockchainTransactionByEvidenceId(evidenceId: string): Promise<BlockchainTransaction | undefined> {
+    const result = await this.db.select().from(blockchainTransactions).where(eq(blockchainTransactions.evidenceId, evidenceId)).limit(1);
+    return result[0];
+  }
+
+  async createBlockchainTransaction(transaction: InsertBlockchainTransaction): Promise<BlockchainTransaction> {
+    const [newTransaction] = await this.db.insert(blockchainTransactions).values(transaction).returning();
+    return newTransaction;
+  }
+
+  async updateBlockchainTransaction(id: string, updates: Partial<BlockchainTransaction>): Promise<BlockchainTransaction | undefined> {
+    const [updated] = await this.db.update(blockchainTransactions)
+      .set(updates)
+      .where(eq(blockchainTransactions.id, id))
+      .returning();
+    return updated;
+  }
 }
 
 export class MemStorage implements IStorage {
@@ -439,4 +703,5 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Use database storage for production
+export const storage = new DatabaseStorage();
