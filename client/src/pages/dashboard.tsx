@@ -71,9 +71,9 @@ export default function Dashboard() {
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Progress Indicator */}
-          {currentCase && (
+          {currentCase && typeof currentCase === 'object' && 'name' in currentCase && (
             <div className="mb-8">
-              <ProgressIndicator case={currentCase} />
+              <ProgressIndicator case={currentCase as any} />
             </div>
           )}
 
@@ -105,7 +105,7 @@ export default function Dashboard() {
                       </div>
                     ))}
                   </div>
-                ) : evidence && evidence.length > 0 ? (
+                ) : evidence && Array.isArray(evidence) && evidence.length > 0 ? (
                   evidence.map((evidenceItem: any) => (
                     <EvidenceCard key={evidenceItem.id} evidence={evidenceItem} />
                   ))
@@ -127,7 +127,7 @@ export default function Dashboard() {
             {/* Right Sidebar */}
             <div className="space-y-6">
               <QuickUpload />
-              {currentCase && <CaseOverview case={currentCase} />}
+              {currentCase && typeof currentCase === 'object' && 'name' in currentCase && <CaseOverview case={currentCase as any} />}
               <AIAnalysis />
               <ChainStatus />
             </div>

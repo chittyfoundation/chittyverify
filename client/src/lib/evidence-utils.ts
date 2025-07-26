@@ -65,12 +65,14 @@ export class EvidenceManager {
       }
 
       // Status distribution
-      metrics.statusDistribution[item.status] = 
-        (metrics.statusDistribution[item.status] || 0) + 1;
+      const itemStatus = item.status || 'unknown';
+      metrics.statusDistribution[itemStatus] = 
+        (metrics.statusDistribution[itemStatus] || 0) + 1;
 
       // Type distribution
-      metrics.typeDistribution[item.type] = 
-        (metrics.typeDistribution[item.type] || 0) + 1;
+      const itemType = item.type || 'unknown';
+      metrics.typeDistribution[itemType] = 
+        (metrics.typeDistribution[itemType] || 0) + 1;
 
       // Trust score sum
       totalTrustScore += item.trustScore || 0;
@@ -269,9 +271,9 @@ export class EvidenceManager {
     const tags: Set<string> = new Set();
 
     // Basic tags
-    tags.add(evidence.type);
+    tags.add(evidence.type || 'unknown');
     if (evidence.subtype) tags.add(evidence.subtype);
-    tags.add(evidence.status);
+    tags.add(evidence.status || 'unknown');
 
     // Extract words from title and description
     const text = `${evidence.title} ${evidence.description || ''}`.toLowerCase();
@@ -329,8 +331,8 @@ export class EvidenceManager {
     const words1 = new Set(text1.match(/\b\w{3,}\b/g) || []);
     const words2 = new Set(text2.match(/\b\w{3,}\b/g) || []);
     
-    const intersection = new Set([...words1].filter(x => words2.has(x)));
-    const union = new Set([...words1, ...words2]);
+    const intersection = new Set(Array.from(words1).filter(x => words2.has(x)));
+    const union = new Set([...Array.from(words1), ...Array.from(words2)]);
     
     if (union.size > 0) {
       similarity += (intersection.size / union.size) * 0.4;
@@ -338,8 +340,8 @@ export class EvidenceManager {
     factors++;
 
     // Date proximity (within same month gets bonus)
-    const date1 = new Date(evidence1.uploadedAt);
-    const date2 = new Date(evidence2.uploadedAt);
+    const date1 = evidence1.uploadedAt ? new Date(evidence1.uploadedAt) : new Date();
+    const date2 = evidence2.uploadedAt ? new Date(evidence2.uploadedAt) : new Date();
     const daysDiff = Math.abs(date1.getTime() - date2.getTime()) / (1000 * 60 * 60 * 24);
     
     if (daysDiff <= 30) {
@@ -393,7 +395,7 @@ export class EvidenceManager {
     }
 
     const keyEvidence = evidence
-      .filter(item => item.trustScore > 80)
+      .filter(item => (item.trustScore || 0) > 80)
       .sort((a, b) => (b.trustScore || 0) - (a.trustScore || 0))
       .slice(0, 3);
 
@@ -487,5 +489,3 @@ export const EvidenceUtils = {
     return pattern.test(artifactId);
   },
 };
-
-export { EvidenceManager };
