@@ -62,74 +62,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   private async initializeDemoData() {
-    try {
-      // Check if demo user exists
-      const existingUser = await this.db.select().from(users).where(eq(users.username, 'john.doe')).limit(1);
-      
-      if (existingUser.length === 0) {
-        // Create demo user
-        const [demoUser] = await this.db.insert(users).values({
-          username: "john.doe",
-          password: "hashedpassword",
-          email: "john.doe@example.com",
-          trustScore: 85
-        }).returning();
-
-        // Create demo case
-        const [demoCase] = await this.db.insert(cases).values({
-          name: "Johnson vs. Smith Property Dispute",
-          description: "Property tax assessment dispute for 541 W Addison St",
-          userId: demoUser.id,
-          status: "active",
-          trustScore: 75,
-          totalEvidence: 3,
-          verifiedEvidence: 2,
-          pendingEvidence: 1,
-          mintedEvidence: 1
-        }).returning();
-
-        // Create demo evidence
-        await this.db.insert(evidence).values([
-          {
-            caseId: demoCase.id,
-            artifactId: "ART-2024-001",
-            title: "Property Tax Assessment 2024",
-            description: "Cook County property tax assessment for 541 W Addison St",
-            type: "document",
-            subtype: "tax_assessment",
-            status: "verified",
-            trustScore: 92,
-            metadata: { source: "Cook County Assessor", verified: true }
-          },
-          {
-            caseId: demoCase.id,
-            artifactId: "ART-2024-002", 
-            title: "Bank Statement - Property Payment",
-            description: "January 2024 bank statement showing property tax payment",
-            type: "financial",
-            subtype: "bank_statement",
-            status: "pending",
-            trustScore: 85,
-            metadata: { institution: "First National Bank", account_partial: "****1234" }
-          },
-          {
-            caseId: demoCase.id,
-            artifactId: "ART-2024-003",
-            title: "Legal Notice - Assessment Appeal",
-            description: "Official notice of property tax assessment appeal filing",
-            type: "legal",
-            subtype: "court_filing",
-            status: "minted",
-            trustScore: 98,
-            metadata: { court: "Cook County Circuit Court", filing_number: "24-TX-4567" }
-          }
-        ]);
-
-        console.log('Demo data initialized successfully');
-      }
-    } catch (error) {
-      console.error('Failed to initialize demo data:', error);
-    }
+    // Demo data initialization disabled - using authentic data only
+    console.log('Database initialized - ready for authentic data');
   }
 
   // Users

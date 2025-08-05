@@ -1,7 +1,8 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { users } from "../shared/schema";
+import { users, cases } from "../shared/schema";
+import { desc } from "drizzle-orm";
 import { insertCaseSchema, insertEvidenceSchema, insertPropertyTaxRecordSchema } from "../shared/schema";
 import { z } from "zod";
 
@@ -9,9 +10,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Cases routes
   app.get("/api/cases", async (req, res) => {
     try {
-      // Get cases for the existing user ID from our database
-      const cases = await storage.getCasesByUserId("42aeb76c-ecb3-4fb0-aa90-1de84eeaad10");
-      res.json(cases);
+      // Get all cases from database
+      const allCases = await storage.db.select().from(storage.cases).orderBy(desc(storage.cases.createdAt));
+      res.json(allCases);
     } catch (error) {
       console.error('Cases API error:', error);
       res.status(500).json({ message: "Failed to fetch cases" });
