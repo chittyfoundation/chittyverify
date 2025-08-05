@@ -136,6 +136,9 @@ export const insertMasterEvidenceSchema = createInsertSchema(masterEvidence).omi
   id: true,
   createdAt: true,
   updatedAt: true,
+}).extend({
+  evidenceWeight: z.number().min(0).max(1).optional(), // Allow number for weight
+  artifactId: z.string().optional(), // Make artifactId optional
 });
 
 export const insertAtomicFactSchema = createInsertSchema(atomicFacts).omit({

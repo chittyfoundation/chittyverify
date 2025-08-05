@@ -161,11 +161,49 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createMasterEvidence(evidence: InsertMasterEvidence): Promise<MasterEvidence> {
+    // DEDUPLICATION CHECK - Prevent duplicate evidence by content hash
+    if (evidence.contentHash) {
+      const existing = await this.db.select()
+        .from(masterEvidence)
+        .where(eq(masterEvidence.contentHash, evidence.contentHash))
+        .limit(1);
+      
+      if (existing.length > 0) {
+        throw new Error(`Evidence already exists with hash ${evidence.contentHash}. Artifact ID: ${existing[0].artifactId}`);
+      }
+    }
+
+    // FILENAME DEDUPLICATION - Check for same filename in same case
+    if (evidence.originalFilename && evidence.caseBinding) {
+      const sameFile = await this.db.select()
+        .from(masterEvidence)
+        .where(eq(masterEvidence.caseBinding, evidence.caseBinding))
+        .where(eq(masterEvidence.originalFilename, evidence.originalFilename))
+        .limit(1);
+      
+      if (sameFile.length > 0) {
+        throw new Error(`File "${evidence.originalFilename}" already uploaded to this case. Artifact ID: ${sameFile[0].artifactId}`);
+      }
+    }
+
     const evidenceWithId = {
       ...evidence,
-      artifactId: evidence.artifactId || `ART-${randomUUID().slice(0, 8).toUpperCase()}`
+      artifactId: evidence.artifactId || `ART-${randomUUID().slice(0, 8).toUpperCase()}`,
+      sourceVerificationStatus: 'Pending', // All evidence starts as pending verification
+      mintingStatus: 'Pending' // Not everything gets minted - requires manual approval
     };
+    
     const [newEvidence] = await this.db.insert(masterEvidence).values(evidenceWithId).returning();
+    
+    // CREATE AUDIT ENTRY
+    await this.createAuditEntry({
+      user: evidence.userBinding,
+      actionType: 'Upload',
+      targetArtifact: newEvidence.id,
+      successFailure: 'Success',
+      details: `Uploaded evidence: ${evidence.originalFilename || 'Unknown filename'}`
+    });
+    
     return newEvidence;
   }
 
@@ -228,6 +266,50 @@ export class DatabaseStorage implements IStorage {
     return newContradiction;
   }
 
+  // Evidence Verification - Core deduplication and integrity checks
+  async verifyEvidenceIntegrity(evidenceId: string, contentHash: string): Promise<boolean> {
+    const evidence = await this.getMasterEvidence(evidenceId);
+    if (!evidence) return false;
+    
+    // Hash verification - ensure content hasn't changed
+    return evidence.contentHash === contentHash;
+  }
+
+  async checkEvidenceAlreadyVerified(contentHash: string): Promise<MasterEvidence | null> {
+    if (!contentHash) return null;
+    
+    const verified = await this.db.select()
+      .from(masterEvidence)
+      .where(eq(masterEvidence.contentHash, contentHash))
+      .where(eq(masterEvidence.sourceVerificationStatus, 'Verified'))
+      .limit(1);
+    
+    return verified[0] || null;
+  }
+
+  async updateVerificationStatus(evidenceId: string, status: 'Verified' | 'Failed' | 'Pending'): Promise<MasterEvidence | undefined> {
+    const [updated] = await this.db.update(masterEvidence)
+      .set({ 
+        sourceVerificationStatus: status,
+        updatedAt: new Date()
+      })
+      .where(eq(masterEvidence.id, evidenceId))
+      .returning();
+    
+    // AUDIT VERIFICATION ACTION
+    if (updated) {
+      await this.createAuditEntry({
+        user: updated.userBinding,
+        actionType: status === 'Verified' ? 'Verify' : 'Reject',
+        targetArtifact: evidenceId,
+        successFailure: 'Success',
+        details: `Evidence verification status: ${status}`
+      });
+    }
+    
+    return updated;
+  }
+
   // Audit Trail
   async getAuditTrail(userId?: string): Promise<AuditTrail[]> {
     if (userId) {
@@ -237,7 +319,11 @@ export class DatabaseStorage implements IStorage {
   }
 
   async createAuditEntry(entry: InsertAuditTrail): Promise<AuditTrail> {
-    const [newEntry] = await this.db.insert(auditTrail).values(entry).returning();
+    const auditData = {
+      ...entry,
+      timestamp: new Date()
+    };
+    const [newEntry] = await this.db.insert(auditTrail).values(auditData).returning();
     return newEntry;
   }
 }

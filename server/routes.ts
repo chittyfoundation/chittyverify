@@ -58,13 +58,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
         ...req.body,
         caseBinding: req.params.caseId,
       });
+      
+      // Check if evidence already verified with this hash
+      if (validatedData.contentHash) {
+        const alreadyVerified = await storage.checkEvidenceAlreadyVerified(validatedData.contentHash);
+        if (alreadyVerified) {
+          return res.status(409).json({ 
+            message: "Evidence already verified", 
+            existingArtifact: alreadyVerified.artifactId,
+            verificationDate: alreadyVerified.updatedAt
+          });
+        }
+      }
+      
       const evidence = await storage.createMasterEvidence(validatedData);
       res.status(201).json(evidence);
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid evidence data", errors: error.errors });
       }
+      if (error.message.includes("already exists")) {
+        return res.status(409).json({ message: error.message });
+      }
+      console.error('Evidence creation error:', error);
       res.status(500).json({ message: "Failed to create evidence" });
+    }
+  });
+
+  // Evidence verification endpoints
+  app.put("/api/evidence/:id/verify", async (req, res) => {
+    try {
+      const { status } = req.body; // 'Verified' | 'Failed' | 'Pending'
+      const updated = await storage.updateVerificationStatus(req.params.id, status);
+      if (!updated) {
+        return res.status(404).json({ message: "Evidence not found" });
+      }
+      res.json(updated);
+    } catch (error) {
+      console.error('Verification error:', error);
+      res.status(500).json({ message: "Failed to update verification status" });
+    }
+  });
+
+  app.get("/api/evidence/:id/integrity", async (req, res) => {
+    try {
+      const { contentHash } = req.query;
+      if (!contentHash) {
+        return res.status(400).json({ message: "Content hash required" });
+      }
+      const isValid = await storage.verifyEvidenceIntegrity(req.params.id, contentHash as string);
+      res.json({ isValid, evidenceId: req.params.id });
+    } catch (error) {
+      console.error('Integrity check error:', error);
+      res.status(500).json({ message: "Failed to verify integrity" });
     }
   });
 
