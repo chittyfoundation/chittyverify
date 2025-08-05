@@ -28,7 +28,7 @@ export function Navigation() {
   ];
 
   return (
-    <nav className="relative z-50 bg-white/95 backdrop-blur-sm shadow-lg border-b border-gray-200">
+    <nav className="relative z-50 bg-slate-900/95 backdrop-blur-sm shadow-lg border-b border-slate-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -40,7 +40,7 @@ export function Navigation() {
                 </div>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-primary-navy">ChittyVerify</h1>
+                <h1 className="text-xl font-bold text-white">ChittyVerify</h1>
               </div>
             </div>
           </Link>

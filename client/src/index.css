@@ -3,25 +3,25 @@
 @tailwind utilities;
 
 :root {
-  --background: hsl(210, 40%, 98%);
-  --foreground: hsl(222.2, 84%, 4.9%);
-  --muted: hsl(210, 40%, 96%);
-  --muted-foreground: hsl(215.4, 16.3%, 46.9%);
-  --popover: hsl(0, 0%, 100%);
-  --popover-foreground: hsl(222.2, 84%, 4.9%);
-  --card: hsl(0, 0%, 100%);
-  --card-foreground: hsl(222.2, 84%, 4.9%);
-  --border: hsl(214.3, 31.8%, 91.4%);
-  --input: hsl(214.3, 31.8%, 91.4%);
-  --primary: hsl(207, 90%, 54%);
-  --primary-foreground: hsl(210, 40%, 98%);
-  --secondary: hsl(210, 40%, 96%);
-  --secondary-foreground: hsl(222.2, 84%, 4.9%);
-  --accent: hsl(210, 40%, 96%);
-  --accent-foreground: hsl(222.2, 84%, 4.9%);
+  --background: hsl(215, 28%, 17%);
+  --foreground: hsl(213, 31%, 91%);
+  --muted: hsl(215, 27%, 26%);
+  --muted-foreground: hsl(213, 10%, 61%);
+  --popover: hsl(215, 26%, 18%);
+  --popover-foreground: hsl(213, 31%, 91%);
+  --card: hsl(215, 26%, 18%);
+  --card-foreground: hsl(213, 31%, 91%);
+  --border: hsl(215, 27%, 26%);
+  --input: hsl(215, 27%, 26%);
+  --primary: hsl(142, 45%, 35%);
+  --primary-foreground: hsl(213, 31%, 91%);
+  --secondary: hsl(215, 27%, 26%);
+  --secondary-foreground: hsl(213, 31%, 91%);
+  --accent: hsl(215, 27%, 26%);
+  --accent-foreground: hsl(213, 31%, 91%);
   --destructive: hsl(0, 84.2%, 60.2%);
   --destructive-foreground: hsl(210, 40%, 98%);
-  --ring: hsl(207, 90%, 54%);
+  --ring: hsl(142, 45%, 35%);
   --radius: 0.5rem;
 
   /* ChittyVerify Custom Colors - Sibling to ChittyTrust */

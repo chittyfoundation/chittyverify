@@ -46,35 +46,58 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-50 bg-noise">
       <Navigation />
 
-      {/* Hero Section */}
-      <section className="py-12 gradient-primary relative">
-        <div className="absolute inset-0 bg-noise opacity-30"></div>
+      {/* Hero Section - ChittyTrust Sibling Style */}
+      <section className="py-20 bg-gradient-to-b from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.1),transparent_50%)]"></div>
+          <div className="absolute inset-0 bg-noise opacity-10"></div>
+        </div>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="text-center text-white">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6">
-              Legal Evidence
-              <span className="metallic-accent block">Verification</span>
+            <h1 className="text-5xl md:text-7xl font-bold mb-8 leading-tight">
+              The Evidence
+              <span className="block bg-gradient-to-r from-green-400 via-emerald-500 to-green-600 bg-clip-text text-transparent">
+                Verification
+              </span>
+              <span className="block text-4xl md:text-5xl font-light text-slate-300">
+                Revolution
+              </span>
             </h1>
-            <p className="text-xl md:text-2xl text-green-100 mb-8 max-w-3xl mx-auto">
-              ChittyVerify immutable verification layer - securing evidence before blockchain commitment
+            <p className="text-xl md:text-2xl text-slate-300 mb-12 max-w-4xl mx-auto leading-relaxed">
+              Beyond simple uploads. Beyond basic validation. ChittyVerify creates immutable verification layers 
+              with cryptographic proof: <strong className="text-green-400">Source, Time, Integrity, Chain of Custody, Trust, and Justice</strong>.
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button className="gradient-verify text-white px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-glow transition-all duration-300 transform hover:scale-105">
-                <i className="fas fa-upload mr-2"></i>
-                Upload Evidence
-              </Button>
-              <Button className="glass-morphism text-white px-8 py-4 rounded-xl font-semibold text-lg hover:bg-white/20 transition-all duration-300">
-                <Search className="w-5 h-5 mr-2" />
-                Search Registry
-              </Button>
+            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
+              <div className="flex items-center gap-4 text-3xl font-bold text-white">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-green-500 to-emerald-600 flex items-center justify-center">
+                  6
+                </div>
+                <span>Verification Layers</span>
+              </div>
+              <div className="flex items-center gap-4 text-3xl font-bold text-white">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-500 to-cyan-600 flex items-center justify-center">
+                  4
+                </div>
+                <span>Proof Types</span>
+              </div>
+              <div className="flex items-center gap-4 text-3xl font-bold text-white">
+                <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-500 to-pink-600 flex items-center justify-center">
+                  ∞
+                </div>
+                <span>Possibilities</span>
+              </div>
             </div>
+
+            <Button className="bg-gradient-to-r from-green-600 to-emerald-700 hover:from-green-700 hover:to-emerald-800 text-white px-12 py-6 rounded-2xl font-semibold text-xl shadow-2xl hover:shadow-green-500/25 transition-all duration-300 transform hover:scale-105">
+              Experience ChittyVerify
+            </Button>
           </div>
         </div>
       </section>
 
       {/* Main Dashboard */}
-      <section className="py-12">
+      <section className="py-12 bg-slate-900">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* One-Click Authentication */}
           <div className="mb-8">
