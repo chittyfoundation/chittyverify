@@ -85,11 +85,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Evidence creation error:', error);
       console.error('Request body:', req.body);
-      console.error('Evidence data:', evidenceData);
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid evidence data", errors: error.errors });
       }
-      res.status(500).json({ message: "Failed to create evidence", error: error.message });
+      res.status(500).json({ message: "Failed to create evidence", error: error instanceof Error ? error.message : 'Unknown error' });
     }
   });
 
@@ -184,7 +183,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const analysisResult = {
         type: "ai_analysis",
-        confidence: 0.85 + Math.random() * 0.15, // Random confidence between 0.85-1.0
+        confidence: (0.85 + Math.random() * 0.15).toString(), // Random confidence between 0.85-1.0
         results: {
           caseStrength: Math.floor(70 + Math.random() * 30), // Random strength 70-100%
           keyFindings: [
@@ -299,7 +298,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         transactionHash: `0x${Math.random().toString(16).substring(2, 18)}`,
         blockNumber: Math.floor(Math.random() * 1000 + 100),
         gasUsed: Math.floor(Math.random() * 50000 + 21000),
-        gasPrice: Math.floor(Math.random() * 20 + 10),
+        gasPrice: (Math.floor(Math.random() * 20 + 10)).toString(),
         status: "confirmed",
         networkStatus: "finalized"
       });
@@ -316,6 +315,40 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Minting error:', error);
       res.status(500).json({ message: "Blockchain minting failed" });
+    }
+  });
+
+  // Notion sync endpoint
+  app.post("/api/evidence/:id/sync-notion", async (req, res) => {
+    try {
+      const evidence = await storage.getEvidence(req.params.id);
+      if (!evidence) {
+        return res.status(404).json({ message: "Evidence not found" });
+      }
+
+      // Check if Notion is configured
+      if (!process.env.NOTION_INTEGRATION_SECRET || !process.env.NOTION_PAGE_URL) {
+        return res.status(400).json({ 
+          message: "Notion integration not configured. Please add NOTION_INTEGRATION_SECRET and NOTION_PAGE_URL." 
+        });
+      }
+
+      // Import Notion module dynamically to avoid errors when secrets aren't available
+      const { syncEvidenceToNotion } = await import('./notion');
+      await syncEvidenceToNotion(evidence);
+
+      res.json({
+        success: true,
+        message: "Evidence synced to Notion successfully",
+        evidenceId: evidence.id,
+        artifactId: evidence.artifactId
+      });
+    } catch (error) {
+      console.error('Notion sync error:', error);
+      res.status(500).json({ 
+        message: "Failed to sync evidence to Notion",
+        error: error instanceof Error ? error.message : 'Unknown error'
+      });
     }
   });
 
@@ -394,7 +427,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       await storage.createAnalysisResult({
         evidenceId: evidence.id,
         type: "comprehensive_analysis",
-        confidence: 0.92,
+        confidence: "0.92",
         results: comprehensiveResult,
         recommendations: ["Evidence successfully analyzed and minted to blockchain"]
       });
