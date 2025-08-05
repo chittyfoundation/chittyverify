@@ -3,7 +3,7 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { users, cases } from "../shared/schema";
 import { desc } from "drizzle-orm";
-import { insertCaseSchema, insertEvidenceSchema, insertPropertyTaxRecordSchema } from "../shared/schema";
+import { insertCaseSchema, insertMasterEvidenceSchema, insertAtomicFactSchema } from "../shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {

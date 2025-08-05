@@ -1,172 +1,181 @@
 import { sql } from "drizzle-orm";
-import { pgTable, text, varchar, timestamp, integer, decimal, boolean, jsonb } from "drizzle-orm/pg-core";
+import { pgTable, text, varchar, timestamp, integer, decimal, boolean, jsonb, serial } from "drizzle-orm/pg-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
+// USERS - Parties, counsel, experts, court officers
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
+  registrationNumber: text("registration_number").notNull().unique(),
+  userType: text("user_type").notNull(), // PARTY_PETITIONER, PARTY_RESPONDENT, ATTORNEY_PETITIONER, etc.
+  fullName: text("full_name").notNull(),
+  barNumber: text("bar_number"),
   email: text("email").notNull().unique(),
+  phone: text("phone"),
+  verifiedStatus: boolean("verified_status").default(false),
   trustScore: integer("trust_score").default(75),
+  lastActivity: timestamp("last_activity").default(sql`now()`),
+  twoFactorEnabled: boolean("two_factor_enabled").default(false),
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 
+// CASES - Matter-level container with roll-ups & deadlines
 export const cases = pgTable("cases", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  name: text("name").notNull(),
-  description: text("description"),
-  userId: varchar("user_id").references(() => users.id).notNull(),
-  status: text("status").default("active"), // active, closed, archived
-  trustScore: integer("trust_score").default(0),
-  totalEvidence: integer("total_evidence").default(0),
-  verifiedEvidence: integer("verified_evidence").default(0),
-  pendingEvidence: integer("pending_evidence").default(0),
-  mintedEvidence: integer("minted_evidence").default(0),
+  caseId: text("case_id").notNull().unique(), // Formula: Jurisdiction + "-" + Year + "-" + Type + "-" + Number
+  jurisdiction: text("jurisdiction").notNull(), // e.g., ILLINOIS-COOK
+  caseNumber: text("case_number").notNull(),
+  caseType: text("case_type").notNull(), // DIVORCE, CUSTODY, CIVIL, CRIMINAL, PROBATE
+  filingDate: timestamp("filing_date"),
+  judgeAssigned: text("judge_assigned"),
+  caseStatus: text("case_status").default("Active"), // Active, Stayed, Closed, Appeal
+  totalEvidenceItems: integer("total_evidence_items").default(0),
+  mintedFactsCount: integer("minted_facts_count").default(0),
+  keyDates: jsonb("key_dates"), // Rich text/table structure
   createdAt: timestamp("created_at").default(sql`now()`),
   updatedAt: timestamp("updated_at").default(sql`now()`),
 });
 
-export const evidence = pgTable("evidence", {
+// MASTER EVIDENCE - Canonical registry of every artifact
+export const masterEvidence = pgTable("master_evidence", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  caseId: varchar("case_id").references(() => cases.id).notNull(),
-  artifactId: text("artifact_id").notNull().unique(),
-  title: text("title").notNull(),
-  description: text("description"),
-  type: text("type").notNull(), // document, image, communication, financial, legal, property_tax
-  subtype: text("subtype"), // contract, email_thread, bank_statement, assessment, etc.
-  filePath: text("file_path"),
-  fileSize: integer("file_size"),
-  mimeType: text("mime_type"),
-  status: text("status").default("pending"), // pending, verified, failed, minted
-  trustScore: integer("trust_score").default(0),
-  blockchain: jsonb("blockchain"), // chain status, hash, block number
-  facts: jsonb("facts"), // extracted facts and key information
-  analysis: jsonb("analysis"), // AI analysis results
-  metadata: jsonb("metadata"), // additional metadata
-  uploadedAt: timestamp("uploaded_at").default(sql`now()`),
-  verifiedAt: timestamp("verified_at"),
-  mintedAt: timestamp("minted_at"),
+  artifactId: text("artifact_id").notNull().unique(), // Formula: "ART-" + id()
+  caseBinding: varchar("case_binding").references(() => cases.id).notNull(),
+  userBinding: varchar("user_binding").references(() => users.id).notNull(),
+  evidenceType: text("evidence_type").notNull(), // Document, Image, Communication, Financial Record, Legal Filing, Physical Evidence
+  evidenceTier: text("evidence_tier").notNull(), // SELF_AUTHENTICATING, GOVERNMENT, FINANCIAL_INSTITUTION, etc.
+  evidenceWeight: decimal("evidence_weight", { precision: 3, scale: 2 }), // 0.0-1.0
+  contentHash: text("content_hash"), // SHA-256
+  originalFilename: text("original_filename"),
+  uploadDate: timestamp("upload_date").default(sql`now()`),
+  sourceVerificationStatus: text("source_verification_status").default("Pending"), // Verified, Pending, Failed
+  authenticationMethod: text("authentication_method"), // Seal, Stamp, Certification, Notarization, etc.
+  supportingClaims: jsonb("supporting_claims"), // Multi-select
+  contradictingClaims: jsonb("contradicting_claims"), // Multi-select
+  mintingStatus: text("minting_status").default("Pending"), // Minted, Pending, Rejected, Requires Corroboration
+  blockNumber: text("block_number"),
+  auditNotes: text("audit_notes"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+  updatedAt: timestamp("updated_at").default(sql`now()`),
 });
 
-export const propertyTaxRecords = pgTable("property_tax_records", {
+// ATOMIC FACTS - Line-item facts extracted from evidence
+export const atomicFacts = pgTable("atomic_facts", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  evidenceId: varchar("evidence_id").references(() => evidence.id).notNull(),
-  pin: text("pin").notNull(), // Property Index Number
-  address: text("address").notNull(),
-  year: integer("year").notNull(),
-  landAssessment: decimal("land_assessment", { precision: 12, scale: 2 }),
-  buildingAssessment: decimal("building_assessment", { precision: 12, scale: 2 }),
-  totalAssessment: decimal("total_assessment", { precision: 12, scale: 2 }),
-  estimatedTax: decimal("estimated_tax", { precision: 12, scale: 2 }),
-  propertyClass: text("property_class"),
-  squareFeet: integer("square_feet"),
-  yearBuilt: integer("year_built"),
-  assessorData: jsonb("assessor_data"), // raw assessor data
-  treasurerData: jsonb("treasurer_data"), // raw treasurer data
-  scrapedAt: timestamp("scraped_at").default(sql`now()`),
-});
-
-export const paymentHistory = pgTable("payment_history", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  propertyTaxRecordId: varchar("property_tax_record_id").references(() => propertyTaxRecords.id).notNull(),
-  paymentDate: timestamp("payment_date").notNull(),
-  amount: decimal("amount", { precision: 12, scale: 2 }).notNull(),
-  method: text("method"), // check, online, cash, etc.
-  confirmationNumber: text("confirmation_number"),
-  installmentNumber: integer("installment_number"),
-  status: text("status").default("completed"), // completed, pending, failed
-});
-
-export const analysisResults = pgTable("analysis_results", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  evidenceId: varchar("evidence_id").references(() => evidence.id).notNull(),
-  type: text("type").notNull(), // ai_analysis, swarm_intelligence, trust_calculation
-  confidence: decimal("confidence", { precision: 5, scale: 4 }), // 0.0000 to 1.0000
-  results: jsonb("results").notNull(),
-  recommendations: jsonb("recommendations"),
-  metadata: jsonb("metadata"),
+  factId: text("fact_id").notNull().unique(), // Formula: "FACT-" + id()
+  parentDocument: varchar("parent_document").references(() => masterEvidence.id).notNull(),
+  factText: text("fact_text").notNull(),
+  factType: text("fact_type").notNull(), // DATE, AMOUNT, ADMISSION, IDENTITY, LOCATION, RELATIONSHIP, ACTION, STATUS
+  locationInDocument: text("location_in_document"), // p./¶/l.
+  classificationLevel: text("classification_level").notNull(), // FACT, SUPPORTED_CLAIM, ASSERTION, ALLEGATION, CONTRADICTION
+  weight: decimal("weight", { precision: 3, scale: 2 }), // 0.0-1.0
+  credibilityFactors: jsonb("credibility_factors"), // Against Interest, Contemporaneous, Business Duty, Official Duty
+  relatedFacts: jsonb("related_facts"), // Self-relation
+  supportsCaseTheory: jsonb("supports_case_theory"), // Multi-select
+  contradictsCaseTheory: jsonb("contradicts_case_theory"), // Multi-select
+  chittychainStatus: text("chittychain_status").default("Pending"), // Minted, Pending, Rejected
+  verificationDate: timestamp("verification_date"),
+  verificationMethod: text("verification_method"),
   createdAt: timestamp("created_at").default(sql`now()`),
 });
 
-export const blockchainTransactions = pgTable("blockchain_transactions", {
-  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
-  evidenceId: varchar("evidence_id").references(() => evidence.id).notNull(),
-  transactionHash: text("transaction_hash").notNull().unique(),
-  blockNumber: integer("block_number"),
-  blockHash: text("block_hash"),
-  gasUsed: integer("gas_used"),
-  gasPrice: decimal("gas_price", { precision: 20, scale: 0 }),
-  status: text("status").default("pending"), // pending, confirmed, failed
-  networkStatus: text("network_status").default("active"),
+// CHAIN OF CUSTODY LOG - Immutable hand-off entries
+export const chainOfCustodyLog = pgTable("chain_of_custody_log", {
+  id: serial("log_id").primaryKey(),
+  evidence: varchar("evidence").references(() => masterEvidence.id).notNull(),
+  custodian: varchar("custodian").references(() => users.id).notNull(),
+  dateReceived: timestamp("date_received").notNull(),
+  dateTransferred: timestamp("date_transferred"),
+  transferMethod: text("transfer_method"), // SEALED_ENVELOPE, CERTIFIED_MAIL, SECURE_DIGITAL, etc.
+  integrityCheckMethod: text("integrity_check_method"), // HASH_VERIFICATION, SEAL_INTACT, etc.
+  integrityVerified: boolean("integrity_verified").default(false),
+  notes: text("notes"),
   createdAt: timestamp("created_at").default(sql`now()`),
-  confirmedAt: timestamp("confirmed_at"),
 });
 
-// Insert schemas
+// CONTRADICTION TRACKING - Conflicting-fact resolution engine
+export const contradictionTracking = pgTable("contradiction_tracking", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  contradictionId: text("contradiction_id").notNull().unique(), // Formula: "CONFLICT-" + id()
+  conflictingFacts: jsonb("conflicting_facts"), // Relation to ATOMIC FACTS (many)
+  conflictType: text("conflict_type").notNull(), // DIRECT_CONTRADICTION, TEMPORAL_IMPOSSIBILITY, etc.
+  winningFact: varchar("winning_fact").references(() => atomicFacts.id),
+  resolutionMethod: text("resolution_method"), // HIERARCHY_RULE, TEMPORAL_PRIORITY, etc.
+  resolutionDate: timestamp("resolution_date"),
+  impactOnCase: text("impact_on_case"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+// AUDIT TRAIL - Every CRUD/read against the system
+export const auditTrail = pgTable("audit_trail", {
+  id: serial("action_id").primaryKey(),
+  timestamp: timestamp("timestamp").default(sql`now()`),
+  user: varchar("user").references(() => users.id).notNull(),
+  actionType: text("action_type").notNull(), // Upload, Verify, Mint, Reject, Query, Modify, Access
+  targetArtifact: varchar("target_artifact").references(() => masterEvidence.id),
+  ipAddress: text("ip_address"),
+  sessionId: text("session_id"),
+  successFailure: text("success_failure").notNull(), // Success, Failure
+  details: text("details"),
+  createdAt: timestamp("created_at").default(sql`now()`),
+});
+
+// Schema validation for inserts
 export const insertUserSchema = createInsertSchema(users).omit({
   id: true,
-  trustScore: true,
   createdAt: true,
 });
 
 export const insertCaseSchema = createInsertSchema(cases).omit({
   id: true,
-  trustScore: true,
-  totalEvidence: true,
-  verifiedEvidence: true,
-  pendingEvidence: true,
-  mintedEvidence: true,
   createdAt: true,
   updatedAt: true,
 });
 
-export const insertEvidenceSchema = createInsertSchema(evidence).omit({
+export const insertMasterEvidenceSchema = createInsertSchema(masterEvidence).omit({
   id: true,
-  trustScore: true,
-  uploadedAt: true,
-  verifiedAt: true,
-  mintedAt: true,
+  createdAt: true,
+  updatedAt: true,
 });
 
-export const insertPropertyTaxRecordSchema = createInsertSchema(propertyTaxRecords).omit({
-  id: true,
-  scrapedAt: true,
-});
-
-export const insertPaymentHistorySchema = createInsertSchema(paymentHistory).omit({
-  id: true,
-});
-
-export const insertAnalysisResultSchema = createInsertSchema(analysisResults).omit({
+export const insertAtomicFactSchema = createInsertSchema(atomicFacts).omit({
   id: true,
   createdAt: true,
 });
 
-export const insertBlockchainTransactionSchema = createInsertSchema(blockchainTransactions).omit({
+export const insertChainOfCustodyLogSchema = createInsertSchema(chainOfCustodyLog).omit({
   id: true,
   createdAt: true,
-  confirmedAt: true,
 });
 
-// Types
-export type InsertUser = z.infer<typeof insertUserSchema>;
+export const insertContradictionTrackingSchema = createInsertSchema(contradictionTracking).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertAuditTrailSchema = createInsertSchema(auditTrail).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Type exports
 export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
 
-export type InsertCase = z.infer<typeof insertCaseSchema>;
 export type Case = typeof cases.$inferSelect;
+export type InsertCase = z.infer<typeof insertCaseSchema>;
 
-export type InsertEvidence = z.infer<typeof insertEvidenceSchema>;
-export type Evidence = typeof evidence.$inferSelect;
+export type MasterEvidence = typeof masterEvidence.$inferSelect;
+export type InsertMasterEvidence = z.infer<typeof insertMasterEvidenceSchema>;
 
-export type InsertPropertyTaxRecord = z.infer<typeof insertPropertyTaxRecordSchema>;
-export type PropertyTaxRecord = typeof propertyTaxRecords.$inferSelect;
+export type AtomicFact = typeof atomicFacts.$inferSelect;
+export type InsertAtomicFact = z.infer<typeof insertAtomicFactSchema>;
 
-export type InsertPaymentHistory = z.infer<typeof insertPaymentHistorySchema>;
-export type PaymentHistory = typeof paymentHistory.$inferSelect;
+export type ChainOfCustodyLog = typeof chainOfCustodyLog.$inferSelect;
+export type InsertChainOfCustodyLog = z.infer<typeof insertChainOfCustodyLogSchema>;
 
-export type InsertAnalysisResult = z.infer<typeof insertAnalysisResultSchema>;
-export type AnalysisResult = typeof analysisResults.$inferSelect;
+export type ContradictionTracking = typeof contradictionTracking.$inferSelect;
+export type InsertContradictionTracking = z.infer<typeof insertContradictionTrackingSchema>;
 
-export type InsertBlockchainTransaction = z.infer<typeof insertBlockchainTransactionSchema>;
-export type BlockchainTransaction = typeof blockchainTransactions.$inferSelect;
+export type AuditTrail = typeof auditTrail.$inferSelect;
+export type InsertAuditTrail = z.infer<typeof insertAuditTrailSchema>;
