@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import SixDTrustWidget from "@/components/trust/SixDTrustWidget";
 import { Navigation } from "@/components/ui/navigation";
 import { Footer } from "@/components/ui/footer";
+import ChittyVerifyWidget from "@/components/verify/ChittyVerifyWidget";
 import { EvidenceCard } from "@/components/ui/evidence-card";
 import { QuickUpload } from "@/components/ui/quick-upload";
 import { ProgressIndicator } from "@/components/ui/progress-indicator";

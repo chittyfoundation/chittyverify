@@ -114,6 +114,68 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ChittyVerify - Immutable verification before blockchain
+  app.post("/api/evidence/:id/chitty-verify", async (req, res) => {
+    try {
+      const evidence = await storage.getMasterEvidence(req.params.id);
+      if (!evidence) {
+        return res.status(404).json({ message: "Evidence not found" });
+      }
+
+      // Get user trust score for verification logic
+      const user = await storage.getUser(evidence.userBinding);
+      const userTrustScore = user?.composite6DTrust || 3.0;
+
+      const { chittyVerify } = await import('./chitty-verify');
+      const verifyResult = await chittyVerify.verifyEvidence({
+        id: evidence.id,
+        contentHash: evidence.contentHash || '',
+        evidenceType: evidence.evidenceType,
+        evidenceTier: evidence.evidenceTier,
+        sourceVerificationStatus: evidence.sourceVerificationStatus || 'Pending',
+        userTrustScore: Number(userTrustScore)
+      });
+
+      // Update evidence with ChittyVerify result
+      const updated = await storage.chittyVerifyEvidence(req.params.id, verifyResult);
+      
+      res.json({
+        evidence: updated,
+        verifyResult,
+        message: `ChittyVerify ${verifyResult.status}: Evidence is now immutably verified off-chain`
+      });
+    } catch (error) {
+      console.error('ChittyVerify error:', error);
+      res.status(500).json({ message: "Failed to ChittyVerify evidence" });
+    }
+  });
+
+  app.get("/api/evidence/:id/chitty-verify-status", async (req, res) => {
+    try {
+      const evidence = await storage.getMasterEvidence(req.params.id);
+      if (!evidence) {
+        return res.status(404).json({ message: "Evidence not found" });
+      }
+
+      const { chittyVerify } = await import('./chitty-verify');
+      const readyForMinting = chittyVerify.isReadyForMinting({
+        verifyStatus: evidence.verifyStatus || 'Unverified',
+        verifySignature: evidence.verifySignature || '',
+        mintingStatus: evidence.mintingStatus || 'Pending'
+      });
+
+      res.json({
+        verifyStatus: evidence.verifyStatus,
+        verifyTimestamp: evidence.verifyTimestamp,
+        readyForMinting,
+        isImmutable: evidence.verifyStatus === 'ChittyVerified'
+      });
+    } catch (error) {
+      console.error('ChittyVerify status error:', error);
+      res.status(500).json({ message: "Failed to check ChittyVerify status" });
+    }
+  });
+
   // Atomic Facts routes
   app.get("/api/evidence/:evidenceId/facts", async (req, res) => {
     try {

@@ -1,8 +1,8 @@
-# ChittyChain Evidence Ledger
+# ChittyVerify Evidence Platform
 
 ## Overview
 
-ChittyChain Evidence Ledger is a comprehensive legal evidence verification system that combines blockchain immutability with AI-powered analysis. The application serves as the verification layer within the ChittyOS ecosystem, providing court-admissible evidence management with cryptographic integrity and automated analysis capabilities.
+ChittyVerify is the immutable verification layer before final blockchain minting. Evidence gets cryptographically verified and locked in an immutable state while remaining off-chain, creating a crucial step between initial upload and final blockchain commitment. This provides court-admissible evidence management with cryptographic integrity without immediate blockchain costs.
 
 ## User Preferences
 

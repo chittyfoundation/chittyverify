@@ -74,6 +74,10 @@ export class DatabaseStorage implements IStorage {
     return result[0];
   }
 
+  async getAllUsers(): Promise<User[]> {
+    return await this.db.select().from(users);
+  }
+
   async getUserByEmail(email: string): Promise<User | undefined> {
     const result = await this.db.select().from(users).where(eq(users.email, email)).limit(1);
     return result[0];
@@ -299,11 +303,41 @@ export class DatabaseStorage implements IStorage {
     // AUDIT VERIFICATION ACTION
     if (updated) {
       await this.createAuditEntry({
-        user: updated.userBinding,
+        userRef: updated.userBinding,
         actionType: status === 'Verified' ? 'Verify' : 'Reject',
         targetArtifact: evidenceId,
         successFailure: 'Success',
         details: `Evidence verification status: ${status}`
+      });
+    }
+    
+    return updated;
+  }
+
+  // ChittyVerify - Immutable verification layer
+  async chittyVerifyEvidence(evidenceId: string, verifyResult: {
+    status: string;
+    timestamp: Date;
+    signature: string;
+  }): Promise<MasterEvidence | undefined> {
+    const [updated] = await this.db.update(masterEvidence)
+      .set({ 
+        verifyStatus: verifyResult.status,
+        verifyTimestamp: verifyResult.timestamp,
+        verifySignature: verifyResult.signature,
+        updatedAt: new Date()
+      })
+      .where(eq(masterEvidence.id, evidenceId))
+      .returning();
+    
+    // AUDIT CHITTYVERIFY ACTION
+    if (updated) {
+      await this.createAuditEntry({
+        userRef: updated.userBinding,
+        actionType: 'ChittyVerify',
+        targetArtifact: evidenceId,
+        successFailure: 'Success',
+        details: `ChittyVerify status: ${verifyResult.status} - Immutable verification completed`
       });
     }
     

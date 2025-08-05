@@ -60,6 +60,10 @@ export const masterEvidence = pgTable("master_evidence", {
   authenticationMethod: text("authentication_method"), // Seal, Stamp, Certification, Notarization, etc.
   supportingClaims: jsonb("supporting_claims"), // Multi-select
   contradictingClaims: jsonb("contradicting_claims"), // Multi-select
+  // ChittyVerify Status - Immutable verification before blockchain
+  verifyStatus: text("verify_status").default("Unverified"), // ChittyVerified, Unverified, Rejected
+  verifyTimestamp: timestamp("verify_timestamp"), // When ChittyVerify locked this evidence
+  verifySignature: text("verify_signature"), // Cryptographic signature for immutability
   mintingStatus: text("minting_status").default("Pending"), // Minted, Pending, Rejected, Requires Corroboration
   blockNumber: text("block_number"),
   auditNotes: text("audit_notes"),
