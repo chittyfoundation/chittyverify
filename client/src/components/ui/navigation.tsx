@@ -35,11 +35,12 @@ export function Navigation() {
           <Link href="/">
             <div className="flex items-center space-x-4 cursor-pointer group">
               <div className="w-10 h-10 rounded-lg gradient-verify flex items-center justify-center group-hover:shadow-glow transition-all duration-300">
-                <i className="fas fa-shield-check text-white text-xl"></i>
+                <div className="verify-icon">
+                  <i className="fas fa-check-circle text-white text-xl"></i>
+                </div>
               </div>
               <div>
                 <h1 className="text-xl font-bold text-primary-navy">ChittyVerify</h1>
-                <p className="text-xs text-gray-600">Evidence Platform</p>
               </div>
             </div>
           </Link>

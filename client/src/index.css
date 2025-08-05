@@ -25,9 +25,10 @@
   --radius: 0.5rem;
 
   /* ChittyVerify Custom Colors - Sibling to ChittyTrust */
-  --primary-navy: hsl(215, 60%, 18%);
-  --primary-green: hsl(142, 71%, 45%);
-  --primary-emerald: hsl(160, 84%, 39%);
+  --primary-navy: hsl(215, 70%, 12%);
+  --primary-blue: hsl(215, 65%, 25%);
+  --primary-green: hsl(142, 45%, 35%);
+  --primary-emerald: hsl(160, 50%, 30%);
   --evidence-document: hsl(207, 73%, 57%);
   --evidence-image: hsl(173, 58%, 39%);
   --evidence-communication: hsl(262, 83%, 58%);
@@ -56,10 +57,10 @@
   --texture-opacity-medium: 0.04;
   --texture-opacity-strong: 0.06;
 
-  /* Gradient Definitions - ChittyVerify Green Theme */
-  --gradient-primary: linear-gradient(135deg, hsl(215, 60%, 18%) 0%, hsl(142, 71%, 45%) 100%);
-  --gradient-verify: linear-gradient(135deg, hsl(142, 71%, 45%) 0%, hsl(160, 84%, 39%) 100%);
-  --gradient-trust: linear-gradient(135deg, hsl(142, 71%, 45%) 0%, hsl(160, 84%, 55%) 50%, hsl(142, 71%, 45%) 100%);
+  /* Gradient Definitions - ChittyVerify Theme */
+  --gradient-primary: linear-gradient(135deg, hsl(215, 70%, 12%) 0%, hsl(215, 65%, 25%) 100%);
+  --gradient-verify: linear-gradient(135deg, hsl(215, 65%, 25%) 0%, hsl(142, 45%, 35%) 100%);
+  --gradient-trust: linear-gradient(135deg, hsl(142, 45%, 35%) 0%, hsl(160, 50%, 40%) 50%, hsl(142, 45%, 35%) 100%);
   --gradient-evidence: linear-gradient(145deg, hsl(0, 0%, 100%) 0%, hsl(210, 40%, 98%) 100%);
 }
 
@@ -140,6 +141,28 @@
     height: 100%;
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
     animation: shimmer 2s infinite;
+  }
+
+  /* Verify Icon Animation */
+  .verify-icon {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .verify-icon::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer-verify 2.5s infinite;
+  }
+
+  @keyframes shimmer-verify {
+    0% { left: -100%; }
+    100% { left: 100%; }
   }
 
   @keyframes shimmer {
