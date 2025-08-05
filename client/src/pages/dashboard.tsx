@@ -55,12 +55,12 @@ export default function Dashboard() {
               Legal Evidence
               <span className="metallic-accent block">Verification</span>
             </h1>
-            <p className="text-xl md:text-2xl text-blue-100 mb-8 max-w-3xl mx-auto">
-              Blockchain-secured evidence management with AI-powered analysis and immutable verification
+            <p className="text-xl md:text-2xl text-green-100 mb-8 max-w-3xl mx-auto">
+              ChittyVerify immutable verification layer - securing evidence before blockchain commitment
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <Button className="gradient-gold text-primary-navy px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-glow transition-all duration-300 transform hover:scale-105">
+              <Button className="gradient-verify text-white px-8 py-4 rounded-xl font-semibold text-lg hover:shadow-glow transition-all duration-300 transform hover:scale-105">
                 <i className="fas fa-upload mr-2"></i>
                 Upload Evidence
               </Button>
@@ -76,6 +76,11 @@ export default function Dashboard() {
       {/* Main Dashboard */}
       <section className="py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          {/* One-Click Authentication */}
+          <div className="mb-8">
+            <OneClickAuthentication />
+          </div>
+
           {/* Progress Indicator */}
           {currentCase && typeof currentCase === 'object' && 'name' in currentCase && (
             <div className="mb-8">

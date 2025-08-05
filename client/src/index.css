@@ -147,9 +147,9 @@
     100% { left: 100%; }
   }
 
-  /* Metallic Accent Text */
+  /* Metallic Accent Text - ChittyVerify Green */
   .metallic-accent {
-    background: var(--gradient-gold);
+    background: var(--gradient-verify);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -175,8 +175,8 @@
     background: var(--gradient-primary);
   }
 
-  .gradient-gold {
-    background: var(--gradient-gold);
+  .gradient-verify {
+    background: var(--gradient-verify);
   }
 
   /* Shadow Utilities */
