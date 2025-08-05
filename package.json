@@ -13,6 +13,7 @@
   "dependencies": {
     "-": "^0.0.1",
     "@anthropic-ai/claude-code": "^1.0.69",
+    "@chittycorp/app-beacon": "github:chittyos/chittybeacon",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
     "@neondatabase/serverless": "^0.10.4",
