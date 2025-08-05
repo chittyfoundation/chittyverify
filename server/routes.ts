@@ -1,6 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { users } from "../shared/schema";
 import { insertCaseSchema, insertEvidenceSchema, insertPropertyTaxRecordSchema } from "../shared/schema";
 import { z } from "zod";
 
@@ -8,10 +9,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Cases routes
   app.get("/api/cases", async (req, res) => {
     try {
-      // For demo, get cases for demo user
-      const cases = await storage.getCasesByUserId("demo-user-1");
+      // Get cases for the existing user ID from our database
+      const cases = await storage.getCasesByUserId("42aeb76c-ecb3-4fb0-aa90-1de84eeaad10");
       res.json(cases);
     } catch (error) {
+      console.error('Cases API error:', error);
       res.status(500).json({ message: "Failed to fetch cases" });
     }
   });
@@ -32,7 +34,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const validatedData = insertCaseSchema.parse({
         ...req.body,
-        userId: "demo-user-1", // For demo purposes
+        userId: "42aeb76c-ecb3-4fb0-aa90-1de84eeaad10", // Use existing demo user
       });
       const case_ = await storage.createCase(validatedData);
       res.status(201).json(case_);

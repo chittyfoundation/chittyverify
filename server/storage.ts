@@ -47,7 +47,7 @@ export interface IStorage {
 }
 
 export class DatabaseStorage implements IStorage {
-  private db;
+  public db;
 
   constructor() {
     if (!process.env.DATABASE_URL) {
@@ -163,7 +163,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getCasesByUserId(userId: string): Promise<Case[]> {
-    return await this.db.select().from(cases).where(eq(cases.userId, userId)).orderBy(desc(cases.createdAt));
+    try {
+      return await this.db.select().from(cases).where(eq(cases.userId, userId)).orderBy(desc(cases.createdAt));
+    } catch (error) {
+      console.error('Database error in getCasesByUserId:', error);
+      throw error;
+    }
   }
 
   async createCase(caseData: InsertCase): Promise<Case> {
