@@ -113,13 +113,7 @@ export async function setupEvidenceRegistry() {
     return await createDatabaseIfNotExists("ChittyChain Evidence Registry", {
         Title: { title: {} },
         ArtifactID: { rich_text: {} },
-        CaseReference: { 
-            relation: {
-                database_id: "", // Will be set after creating Case Management DB
-                type: "single_property",
-                single_property: {}
-            }
-        },
+        CaseReference: { rich_text: {} }, // Simplified - no relation for now
         EvidenceType: {
             select: {
                 options: [
@@ -195,13 +189,7 @@ export async function setupAtomicFacts() {
         },
         TrustScore: { number: {} },
         Confidence: { number: {} },
-        SupportingEvidence: { 
-            relation: {
-                database_id: "", // Will be set after creating Evidence Registry
-                type: "dual_property", 
-                dual_property: {}
-            }
-        },
+        SupportingEvidence: { rich_text: {} }, // Simplified - no relation for now
         ExtractedFrom: { rich_text: {} },
         VerificationStatus: {
             select: {
@@ -221,13 +209,7 @@ export async function setupAtomicFacts() {
 export async function setupBlockchainTransactions() {
     return await createDatabaseIfNotExists("ChittyChain Blockchain Transactions", {
         TransactionHash: { title: {} },
-        EvidenceReference: {
-            relation: {
-                database_id: "", // Will be set after creating Evidence Registry
-                type: "single_property",
-                single_property: {}
-            }
-        },
+        EvidenceReference: { rich_text: {} }, // Simplified - no relation for now
         BlockNumber: { number: {} },
         GasUsed: { number: {} },
         GasPrice: { rich_text: {} },
