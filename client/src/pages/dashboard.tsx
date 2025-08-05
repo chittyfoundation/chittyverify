@@ -3,6 +3,9 @@ import SixDTrustWidget from "@/components/trust/SixDTrustWidget";
 import { Navigation } from "@/components/ui/navigation";
 import { Footer } from "@/components/ui/footer";
 import ChittyVerifyWidget from "@/components/verify/ChittyVerifyWidget";
+import BatchUploadWidget from "@/components/upload/BatchUploadWidget";
+import AdaptiveVerificationFlow from "@/components/verification/AdaptiveVerificationFlow";
+import OneClickAuthentication from "@/components/authentication/OneClickAuthentication";
 import { EvidenceCard } from "@/components/ui/evidence-card";
 import { QuickUpload } from "@/components/ui/quick-upload";
 import { ProgressIndicator } from "@/components/ui/progress-indicator";
@@ -129,6 +132,13 @@ export default function Dashboard() {
 
             {/* Right Sidebar */}
             <div className="space-y-6">
+              {/* Adaptive Verification Flow */}
+              <AdaptiveVerificationFlow 
+                evidenceId="ART-CHI2025"
+                currentStep={2}
+                overallProgress={67}
+              />
+              
               {/* ChittyTrust 6D Trust Widget */}
               <SixDTrustWidget 
                 user={{

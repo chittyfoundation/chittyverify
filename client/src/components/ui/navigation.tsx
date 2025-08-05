@@ -38,8 +38,8 @@ export function Navigation() {
                 <i className="fas fa-link text-white text-xl"></i>
               </div>
               <div>
-                <h1 className="text-xl font-bold text-primary-navy">ChittyChain</h1>
-                <p className="text-xs text-gray-600">Evidence Ledger</p>
+                <h1 className="text-xl font-bold text-primary-navy">ChittyVerify</h1>
+                <p className="text-xs text-gray-600">Evidence Platform</p>
               </div>
             </div>
           </Link>

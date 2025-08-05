@@ -24,10 +24,10 @@
   --ring: hsl(207, 90%, 54%);
   --radius: 0.5rem;
 
-  /* ChittyChain Custom Colors */
+  /* ChittyVerify Custom Colors - Sibling to ChittyTrust */
   --primary-navy: hsl(215, 60%, 18%);
-  --primary-blue: hsl(207, 90%, 54%);
-  --primary-gold: hsl(45, 76%, 46%);
+  --primary-green: hsl(142, 71%, 45%);
+  --primary-emerald: hsl(160, 84%, 39%);
   --evidence-document: hsl(207, 73%, 57%);
   --evidence-image: hsl(173, 58%, 39%);
   --evidence-communication: hsl(262, 83%, 58%);
@@ -56,10 +56,10 @@
   --texture-opacity-medium: 0.04;
   --texture-opacity-strong: 0.06;
 
-  /* Gradient Definitions */
-  --gradient-primary: linear-gradient(135deg, hsl(215, 60%, 18%) 0%, hsl(207, 90%, 54%) 100%);
-  --gradient-gold: linear-gradient(135deg, hsl(45, 76%, 46%) 0%, hsl(45, 90%, 65%) 100%);
-  --gradient-trust: linear-gradient(135deg, hsl(45, 76%, 46%) 0%, hsl(45, 90%, 65%) 50%, hsl(45, 76%, 46%) 100%);
+  /* Gradient Definitions - ChittyVerify Green Theme */
+  --gradient-primary: linear-gradient(135deg, hsl(215, 60%, 18%) 0%, hsl(142, 71%, 45%) 100%);
+  --gradient-verify: linear-gradient(135deg, hsl(142, 71%, 45%) 0%, hsl(160, 84%, 39%) 100%);
+  --gradient-trust: linear-gradient(135deg, hsl(142, 71%, 45%) 0%, hsl(160, 84%, 55%) 50%, hsl(142, 71%, 45%) 100%);
   --gradient-evidence: linear-gradient(145deg, hsl(0, 0%, 100%) 0%, hsl(210, 40%, 98%) 100%);
 }
 
