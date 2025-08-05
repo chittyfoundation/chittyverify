@@ -64,8 +64,8 @@ export class DatabaseStorage implements IStorage {
   }
 
   private async initializeDatabase() {
-    // Database initialized - ready for authentic data
-    console.log('ChittyChain Evidence Ledger initialized - ready for authentic legal data');
+    // Database initialized - ready for authentic data only
+    console.log('ChittyVerify Evidence Platform initialized - no mock data, authentic evidence only');
   }
 
   // Users
