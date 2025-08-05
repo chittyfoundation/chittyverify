@@ -3,7 +3,7 @@ import { pgTable, text, varchar, timestamp, integer, decimal, boolean, jsonb, se
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
-// USERS - Parties, counsel, experts, court officers
+// USERS - Parties, counsel, experts, court officers with 6D Trust
 export const users = pgTable("users", {
   id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
   registrationNumber: text("registration_number").notNull().unique(),
@@ -17,6 +17,14 @@ export const users = pgTable("users", {
   lastActivity: timestamp("last_activity").default(sql`now()`),
   twoFactorEnabled: boolean("two_factor_enabled").default(false),
   createdAt: timestamp("created_at").default(sql`now()`),
+  // ChittyTrust 6D Trust Revolution - Beyond credit scores, beyond binary trust
+  sourceScore: decimal("source_score", { precision: 3, scale: 2 }).default("0.50"), // Source reliability & authenticity
+  timeScore: decimal("time_score", { precision: 3, scale: 2 }).default("0.50"), // Temporal consistency & timeliness
+  channelScore: decimal("channel_score", { precision: 3, scale: 2 }).default("0.50"), // Communication channel integrity
+  outcomesScore: decimal("outcomes_score", { precision: 3, scale: 2 }).default("0.50"), // Historical success & reliability
+  networkScore: decimal("network_score", { precision: 3, scale: 2 }).default("0.50"), // Professional network strength
+  justiceScore: decimal("justice_score", { precision: 3, scale: 2 }).default("0.50"), // Ethical alignment & fairness
+  composite6DTrust: decimal("composite_6d_trust", { precision: 4, scale: 2 }).default("3.00"), // Sum of all 6 dimensions
 });
 
 // CASES - Matter-level container with roll-ups & deadlines

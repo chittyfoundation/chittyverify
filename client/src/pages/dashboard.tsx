@@ -1,4 +1,5 @@
 import { useQuery } from "@tanstack/react-query";
+import SixDTrustWidget from "@/components/trust/SixDTrustWidget";
 import { Navigation } from "@/components/ui/navigation";
 import { Footer } from "@/components/ui/footer";
 import { EvidenceCard } from "@/components/ui/evidence-card";
@@ -127,6 +128,21 @@ export default function Dashboard() {
 
             {/* Right Sidebar */}
             <div className="space-y-6">
+              {/* ChittyTrust 6D Trust Widget */}
+              <SixDTrustWidget 
+                user={{
+                  sourceScore: 0.85,
+                  timeScore: 0.78,
+                  channelScore: 0.92,
+                  outcomesScore: 0.88,
+                  networkScore: 0.75,
+                  justiceScore: 0.90,
+                  composite6DTrust: 5.08,
+                  fullName: "John Smith, Esq.",
+                  userType: "Attorney (Petitioner)"
+                }}
+              />
+              
               <QuickUpload />
               {currentCase && typeof currentCase === 'object' && 'name' in currentCase && <CaseOverview case={currentCase as any} />}
               <AIAnalysis />
