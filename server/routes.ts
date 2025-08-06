@@ -1,10 +1,52 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { chittyIdService } from "./chittyid-integration";
 import { insertCaseSchema, insertMasterEvidenceSchema, insertAtomicFactSchema } from "../shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  
+  // ChittyID Integration Routes
+  app.post('/api/chittyid/validate', async (req, res) => {
+    try {
+      const { chittyId } = req.body;
+      
+      if (!chittyId) {
+        return res.status(400).json({ error: 'ChittyID is required' });
+      }
+      
+      const validation = await chittyIdService.validateChittyID(chittyId);
+      res.json(validation);
+      
+    } catch (error) {
+      console.error('ChittyID validation error:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'ChittyID service unavailable' });
+    }
+  });
+  
+  app.post('/api/chittyid/generate', async (req, res) => {
+    try {
+      const { vertical = 'user' } = req.body;
+      
+      const generated = await chittyIdService.generateChittyID(vertical);
+      res.json(generated);
+      
+    } catch (error) {
+      console.error('ChittyID generation error:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'ChittyID service unavailable' });
+    }
+  });
+
+  app.get('/api/chittyid/health', async (req, res) => {
+    try {
+      const health = await chittyIdService.healthCheck();
+      res.json(health);
+    } catch (error) {
+      console.error('ChittyID health check error:', error);
+      res.status(500).json({ error: 'ChittyID service unavailable' });
+    }
+  });
   // Cases routes
   app.get("/api/cases", async (req, res) => {
     try {

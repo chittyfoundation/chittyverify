@@ -52,17 +52,32 @@ export function OneClickAuthentication() {
   const verifyChittyId = async (id: string) => {
     setIsVerifyingSource(true);
     try {
-      // Simulate ChittyID verification with backend call
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Call actual ChittyID API for validation
+      const response = await fetch('/api/chittyid/validate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ chittyId: id }),
+      });
       
-      // Mock verification - in real system this would check against ChittyID registry
-      if (id.length >= 10 && id.match(/^CH-\d{4}-[A-Z]{3}-\d{4}-[A-Z]$/)) {
+      if (!response.ok) {
+        throw new Error('ChittyID validation failed');
+      }
+      
+      const validation = await response.json();
+      
+      if (validation.valid && validation.details) {
         setSourceVerified(true);
         return true;
       } else {
         setSourceVerified(false);
         return false;
       }
+    } catch (error) {
+      console.error('ChittyID verification error:', error);
+      setSourceVerified(false);
+      return false;
     } finally {
       setIsVerifyingSource(false);
     }
@@ -225,6 +240,8 @@ export function OneClickAuthentication() {
             </div>
             <p className="text-slate-400 mb-4">
               Connect your verified ChittyID to establish source authenticity and legal standing before creating evidence records.
+              <br />
+              <span className="text-blue-400 text-sm">Don't have a ChittyID? <button className="underline hover:text-blue-300" onClick={() => window.open('http://localhost:3000/api/v1/generate', '_blank')}>Generate one here</button></span>
             </p>
             <div className="flex gap-3">
               <Input
