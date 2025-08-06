@@ -55,8 +55,8 @@ export function OneClickAuthentication() {
       // Simulate ChittyID verification with backend call
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      // Mock verification - in real system this would check against ChittyTrust registry
-      if (id.length >= 8 && id.match(/^[A-Z0-9]+$/)) {
+      // Mock verification - in real system this would check against ChittyID registry
+      if (id.length >= 10 && id.match(/^CH-\d{4}-[A-Z]{3}-\d{4}-[A-Z]$/)) {
         setSourceVerified(true);
         return true;
       } else {
@@ -224,11 +224,11 @@ export function OneClickAuthentication() {
               <h3 className="text-lg font-medium text-white">Source Authentication Required</h3>
             </div>
             <p className="text-slate-400 mb-4">
-              Enter your ChittyID to verify your identity and establish source authenticity before uploading evidence.
+              Connect your verified ChittyID to establish source authenticity and legal standing before creating evidence records.
             </p>
             <div className="flex gap-3">
               <Input
-                placeholder="Enter ChittyID (e.g. CT2025ABCD)"
+                placeholder="Enter ChittyID (e.g. CH-2024-VER-1234-A)"
                 value={chittyId}
                 onChange={(e) => setChittyId(e.target.value.toUpperCase())}
                 className="bg-slate-700 border-slate-600 text-white flex-1"
@@ -261,7 +261,7 @@ export function OneClickAuthentication() {
               </Badge>
             </div>
             <p className="text-green-400 text-sm mt-1">
-              Identity verified. You may now upload evidence for authentication.
+              ChittyID verified. Legal standing confirmed. Ready for evidence upload.
             </p>
           </div>
         )}

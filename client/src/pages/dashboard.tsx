@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
-import SixDTrustWidget from "@/components/trust/SixDTrustWidget";
+import { SixDTrustWidget } from "@/components/trust/SixDTrustWidget";
 import { Navigation } from "@/components/ui/navigation";
 import { Footer } from "@/components/ui/footer";
 import ChittyVerifyWidget from "@/components/verify/ChittyVerifyWidget";
 import BatchUploadWidget from "@/components/upload/BatchUploadWidget";
-import AdaptiveVerificationFlow from "@/components/verification/AdaptiveVerificationFlow";
-import OneClickAuthentication from "@/components/authentication/OneClickAuthentication";
+import { AdaptiveVerificationFlow } from "@/components/verification/AdaptiveVerificationFlow";
+import { OneClickAuthentication } from "@/components/authentication/OneClickAuthentication";
 import { EvidenceCard } from "@/components/ui/evidence-card";
 import { QuickUpload } from "@/components/ui/quick-upload";
 import { ProgressIndicator } from "@/components/ui/progress-indicator";
@@ -64,8 +64,8 @@ export default function Dashboard() {
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-slate-300 mb-12 max-w-4xl mx-auto leading-relaxed">
-              Beyond simple uploads. Beyond basic validation. ChittyVerify creates immutable verification layers 
-              with cryptographic proof: <strong className="text-green-400">Source, Time, Integrity, Chain of Custody, Trust, and Justice</strong>.
+              Stop uploading evidence over and over. Get verified once with ChittyVerify and create immutable proof 
+              that courts, lawyers, and institutions trust: <strong className="text-green-400">Source, Time, Integrity, Chain of Custody, Trust, and Justice</strong>.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-6 justify-center items-center mb-16">
