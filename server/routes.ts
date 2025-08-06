@@ -2,6 +2,7 @@ import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { chittyIdService } from "./chittyid-integration";
+import { createChittyBeaconRouter } from "./chittybeacon";
 import { insertCaseSchema, insertMasterEvidenceSchema, insertAtomicFactSchema } from "../shared/schema";
 import { z } from "zod";
 
@@ -47,6 +48,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ error: 'ChittyID service unavailable' });
     }
   });
+
+  // ChittyBeacon Integration Routes
+  app.use('/api/beacon', createChittyBeaconRouter());
+  
   // Cases routes
   app.get("/api/cases", async (req, res) => {
     try {

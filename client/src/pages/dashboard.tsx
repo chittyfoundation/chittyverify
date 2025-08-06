@@ -3,6 +3,7 @@ import { Navigation } from "@/components/ui/navigation";
 import { Footer } from "@/components/ui/footer";
 import { OneClickAuthentication } from "@/components/authentication/OneClickAuthentication";
 import { EvidenceCard } from "@/components/ui/evidence-card";
+import ChittyBeaconWidget from "@/components/beacon/ChittyBeaconWidget";
 import { Shield, FileCheck, Lock, Zap, CheckCircle, Clock, Users, Award, Database, Globe } from "lucide-react";
 import { useState } from "react";
 
@@ -182,6 +183,19 @@ export default function Dashboard() {
         </div>
       </section>
 
+      {/* ChittyBeacon Integration */}
+      <section className="py-16">
+        <div className="container-professional">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-white mb-4">ChittyBeacon Integration</h2>
+            <p className="text-lg text-slate-400 max-w-3xl mx-auto">
+              Generate immutable evidence beacons and verify blockchain-ready evidence records with cryptographic proof
+            </p>
+          </div>
+          <ChittyBeaconWidget />
+        </div>
+      </section>
+
       {/* Evidence Dashboard */}
       <section className="py-16">
         <div className="container-professional">
@@ -212,7 +226,6 @@ export default function Dashboard() {
                 <EvidenceCard 
                   key={item.id} 
                   evidence={item}
-                  className="slide-up"
                   style={{ animationDelay: `${index * 100}ms` }}
                 />
               ))}
