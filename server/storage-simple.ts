@@ -46,8 +46,8 @@ export class DatabaseStorage implements IStorage {
 
   async createCase(caseData: InsertCase): Promise<Case> {
     const caseWithId = {
-      id: `case-${randomUUID()}`,
       ...caseData,
+      id: `case-${randomUUID()}`,
       caseId: caseData.caseId || `${caseData.jurisdiction}-${new Date().getFullYear()}-${caseData.caseType}-${Date.now()}`
     };
     const [newCase] = await this.db.insert(cases).values(caseWithId).returning();
@@ -86,9 +86,9 @@ export class DatabaseStorage implements IStorage {
 
   async createMasterEvidence(evidence: InsertMasterEvidence): Promise<MasterEvidence> {
     const evidenceWithId = {
+      ...evidence,
       id: `evidence-${randomUUID()}`,
       artifactId: `ART-${Date.now()}`,
-      ...evidence,
     };
     const [newEvidence] = await this.db.insert(masterEvidence).values(evidenceWithId).returning();
     return newEvidence;
