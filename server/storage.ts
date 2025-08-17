@@ -360,6 +360,64 @@ export class DatabaseStorage implements IStorage {
     const [newEntry] = await this.db.insert(auditTrail).values(auditData).returning();
     return newEntry;
   }
+
+  // Evidence sharing operations
+  async createEvidenceShare(shareData: InsertEvidenceShare): Promise<EvidenceShare> {
+    const [share] = await this.db
+      .insert(evidenceShares)
+      .values(shareData)
+      .returning();
+    return share;
+  }
+
+  async getEvidenceShareByShareId(shareId: string): Promise<EvidenceShare | undefined> {
+    const [share] = await this.db
+      .select()
+      .from(evidenceShares)
+      .where(eq(evidenceShares.shareId, shareId));
+    return share;
+  }
+
+  async getEvidenceSharesByEvidence(evidenceId: string): Promise<EvidenceShare[]> {
+    return await this.db
+      .select()
+      .from(evidenceShares)
+      .where(eq(evidenceShares.evidenceId, evidenceId))
+      .orderBy(desc(evidenceShares.sharedAt));
+  }
+
+  async updateEvidenceShareAccess(shareId: string, accessCount: number): Promise<void> {
+    await this.db
+      .update(evidenceShares)
+      .set({ 
+        accessCount,
+        lastAccessedAt: new Date()
+      })
+      .where(eq(evidenceShares.shareId, shareId));
+  }
+
+  async deactivateEvidenceShare(shareId: string): Promise<void> {
+    await this.db
+      .update(evidenceShares)
+      .set({ isActive: false })
+      .where(eq(evidenceShares.shareId, shareId));
+  }
+
+  async createShareAccessLog(logData: InsertShareAccessLog): Promise<ShareAccessLog> {
+    const [log] = await this.db
+      .insert(shareAccessLogs)
+      .values(logData)
+      .returning();
+    return log;
+  }
+
+  async getShareAccessLogs(shareId: string): Promise<ShareAccessLog[]> {
+    return await this.db
+      .select()
+      .from(shareAccessLogs)
+      .where(eq(shareAccessLogs.shareId, shareId))
+      .orderBy(desc(shareAccessLogs.accessedAt));
+  }
 }
 
 export const storage = new DatabaseStorage();

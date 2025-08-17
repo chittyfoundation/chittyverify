@@ -194,3 +194,57 @@ export type InsertContradictionTracking = z.infer<typeof insertContradictionTrac
 
 export type AuditTrail = typeof auditTrail.$inferSelect;
 export type InsertAuditTrail = z.infer<typeof insertAuditTrailSchema>;
+
+// Evidence Sharing System
+export const evidenceShares = pgTable("evidence_shares", {
+  id: serial("id").primaryKey(),
+  evidenceId: varchar("evidence_id").references(() => masterEvidence.id).notNull(),
+  shareId: varchar("share_id", { length: 255 }).unique().notNull(),
+  sharedBy: varchar("shared_by", { length: 255 }).notNull(), // ChittyID
+  sharedWith: varchar("shared_with", { length: 255 }).notNull(), // Email or ChittyID
+  accessLevel: varchar("access_level", { length: 50 }).notNull().default("view"), // view, download, verify
+  expiresAt: timestamp("expires_at"),
+  accessCount: integer("access_count").default(0),
+  maxAccess: integer("max_access"), // null = unlimited
+  isActive: boolean("is_active").default(true),
+  securityPin: varchar("security_pin", { length: 10}), // Optional 4-6 digit PIN
+  accessLog: jsonb("access_log").default([]), // Track access attempts
+  sharedAt: timestamp("shared_at").defaultNow(),
+  lastAccessedAt: timestamp("last_accessed_at"),
+  metadata: jsonb("metadata").default({})
+});
+
+export const shareAccessLogs = pgTable("share_access_logs", {
+  id: serial("id").primaryKey(),
+  shareId: varchar("share_id", { length: 255 }).references(() => evidenceShares.shareId).notNull(),
+  accessorId: varchar("accessor_id", { length: 255 }), // ChittyID or anonymous
+  accessorEmail: varchar("accessor_email", { length: 255 }),
+  ipAddress: varchar("ip_address", { length: 45 }),
+  userAgent: text("user_agent"),
+  action: varchar("action", { length: 50 }).notNull(), // view, download, verify, failed_auth
+  success: boolean("success").default(true),
+  accessedAt: timestamp("accessed_at").defaultNow(),
+  metadata: jsonb("metadata").default({})
+});
+
+// Relations for sharing system - will be added after schema setup
+
+// Insert schemas for sharing system
+export const insertEvidenceShareSchema = createInsertSchema(evidenceShares).omit({
+  id: true,
+  sharedAt: true,
+  accessCount: true,
+  lastAccessedAt: true,
+});
+
+export const insertShareAccessLogSchema = createInsertSchema(shareAccessLogs).omit({
+  id: true,
+  accessedAt: true,
+});
+
+// Types for sharing system
+export type EvidenceShare = typeof evidenceShares.$inferSelect;
+export type InsertEvidenceShare = z.infer<typeof insertEvidenceShareSchema>;
+
+export type ShareAccessLog = typeof shareAccessLogs.$inferSelect;
+export type InsertShareAccessLog = z.infer<typeof insertShareAccessLogSchema>;

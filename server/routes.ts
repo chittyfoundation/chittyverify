@@ -316,6 +316,52 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Evidence sharing endpoints
+  app.post('/api/evidence/share', async (req, res) => {
+    try {
+      const shareRequest = {
+        ...req.body,
+        sharedBy: "CH-2025-VER-0001-A" // In real app, get from authenticated user
+      };
+
+      const { sharingService } = await import('./sharing-service');
+      const shareResponse = await sharingService.createEvidenceShare(shareRequest);
+      
+      res.json(shareResponse);
+    } catch (error) {
+      console.error('Evidence sharing error:', error);
+      res.status(500).json({ error: error.message || 'Failed to create evidence share' });
+    }
+  });
+
+  app.get('/api/share/:shareId', async (req, res) => {
+    try {
+      const { shareId } = req.params;
+      const { pin } = req.query;
+
+      const { sharingService } = await import('./sharing-service');
+      const accessResult = await sharingService.verifyShareAccess(shareId, pin as string);
+      
+      if (accessResult.valid) {
+        await sharingService.logShareAccess(shareId, 'view', true);
+        res.json({
+          valid: true,
+          evidence: accessResult.evidence,
+          share: accessResult.share
+        });
+      } else {
+        await sharingService.logShareAccess(shareId, 'view_failed', false);
+        res.status(403).json({
+          valid: false,
+          reason: accessResult.reason || 'Access denied'
+        });
+      }
+    } catch (error) {
+      console.error('Share access error:', error);
+      res.status(500).json({ error: 'Failed to verify share access' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

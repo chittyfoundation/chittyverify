@@ -4,6 +4,7 @@ import { Footer } from "@/components/ui/footer";
 import { OneClickAuthentication } from "@/components/authentication/OneClickAuthentication";
 import { EvidenceCard } from "@/components/ui/evidence-card";
 import ChittyBeaconWidget from "@/components/beacon/ChittyBeaconWidget";
+import { QuickShareButton } from "@/components/sharing/QuickShareButton";
 import { Shield, FileCheck, Lock, Zap, CheckCircle, Clock, Users, Award, Database, Globe } from "lucide-react";
 import { useState } from "react";
 
