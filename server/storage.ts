@@ -113,7 +113,18 @@ export class DatabaseStorage implements IStorage {
 
   async getCasesByUserId(userId: string): Promise<Case[]> {
     try {
-      return await this.db.select().from(cases).orderBy(desc(cases.createdAt));
+      return await this.db.select({
+        id: cases.id,
+        caseId: cases.caseId,
+        title: cases.title,
+        description: cases.description,
+        caseType: cases.caseType,
+        caseNumber: cases.caseNumber,
+        jurisdiction: cases.jurisdiction,
+        status: cases.status,
+        createdAt: cases.createdAt,
+        updatedAt: cases.updatedAt
+      }).from(cases).orderBy(desc(cases.createdAt));
     } catch (error) {
       console.error('Database error in getCasesByUserId:', error);
       throw error;
@@ -161,7 +172,26 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getMasterEvidenceByCase(caseId: string): Promise<MasterEvidence[]> {
-    return await this.db.select().from(masterEvidence).where(eq(masterEvidence.caseBinding, caseId)).orderBy(desc(masterEvidence.uploadDate));
+    try {
+      return await this.db.select({
+        id: masterEvidence.id,
+        artifactId: masterEvidence.artifactId,
+        title: masterEvidence.title,
+        description: masterEvidence.description,
+        type: masterEvidence.type,
+        status: masterEvidence.status,
+        caseBinding: masterEvidence.caseBinding,
+        trustScore: masterEvidence.trustScore,
+        uploadTimestamp: masterEvidence.uploadTimestamp,
+        verifyStatus: masterEvidence.verifyStatus,
+        verifyTimestamp: masterEvidence.verifyTimestamp,
+        mintingStatus: masterEvidence.mintingStatus,
+        createdAt: masterEvidence.createdAt
+      }).from(masterEvidence).where(eq(masterEvidence.caseBinding, caseId)).orderBy(desc(masterEvidence.uploadTimestamp));
+    } catch (error) {
+      console.error('Evidence query error:', error);
+      throw error;
+    }
   }
 
   async createMasterEvidence(evidence: InsertMasterEvidence): Promise<MasterEvidence> {

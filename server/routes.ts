@@ -1,9 +1,9 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
-import { storage } from "./storage";
+import { storage } from "./storage-simple";
 import { chittyIdService } from "./chittyid-integration";
 import { createChittyBeaconRouter } from "./chittybeacon";
-import { insertCaseSchema, insertMasterEvidenceSchema, insertAtomicFactSchema } from "../shared/schema";
+import { insertCaseSchema, insertMasterEvidenceSchema } from "../shared/schema-simple";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
