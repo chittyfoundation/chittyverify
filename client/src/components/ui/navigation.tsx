@@ -46,19 +46,18 @@ export function Navigation() {
           </Link>
 
           {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
+          <div className="hidden md:flex items-center space-x-1">
             {navigationItems.map((item) => (
               <Link key={item.href} href={item.href}>
-                <Button
-                  variant="ghost"
-                  className={`font-medium transition-colors ${
+                <button
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                     item.active
-                      ? "text-primary-blue bg-blue-50"
-                      : "text-gray-700 hover:text-primary-blue hover:bg-blue-50"
+                      ? "bg-primary-blue/20 text-primary-blue border border-primary-blue/30"
+                      : "text-slate-300 hover:text-white hover:bg-slate-800/60"
                   }`}
                 >
                   {item.label}
-                </Button>
+                </button>
               </Link>
             ))}
           </div>
@@ -68,21 +67,21 @@ export function Navigation() {
             {/* Search */}
             <div className="hidden md:flex items-center">
               <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                <Search className="w-4 h-4 absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400" />
                 <input
                   type="text"
                   placeholder="Search evidence..."
-                  className="pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent bg-white"
+                  className="pl-10 pr-4 py-2 text-sm border border-slate-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-blue focus:border-transparent bg-slate-800 text-white placeholder-slate-400"
                 />
               </div>
             </div>
 
             {/* Notifications */}
             <div className="hidden md:flex items-center">
-              <Button variant="ghost" size="sm" className="relative">
+              <button className="relative p-2 text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-slate-800/60">
                 <Bell className="w-5 h-5" />
                 <span className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full text-xs"></span>
-              </Button>
+              </button>
             </div>
 
             {/* Trust Score & User */}
@@ -92,27 +91,26 @@ export function Navigation() {
               </div>
               <div className="flex items-center space-x-2">
                 <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900">
+                  <p className="text-sm font-medium text-white">
                     {user?.username || "John Doe"}
                   </p>
-                  <p className="text-xs text-gray-600">Legal Professional</p>
+                  <p className="text-xs text-slate-400">Legal Professional</p>
                 </div>
                 <div className="w-8 h-8 bg-gradient-to-br from-primary-blue to-primary-navy rounded-full flex items-center justify-center">
                   <span className="text-white font-semibold text-sm">
                     {(user?.username || "JD").charAt(0).toUpperCase()}
                   </span>
                 </div>
-                <Button variant="ghost" size="sm">
+                <button className="p-2 text-slate-400 hover:text-white transition-colors rounded-lg hover:bg-slate-800/60">
                   <Settings className="w-4 h-4" />
-                </Button>
+                </button>
               </div>
             </div>
 
             {/* Mobile Menu Button */}
             <div className="md:hidden">
-              <Button
-                variant="ghost"
-                size="sm"
+              <button
+                className="p-2 text-slate-300 hover:text-white transition-colors rounded-lg hover:bg-slate-800/60"
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               >
                 {isMobileMenuOpen ? (
@@ -120,37 +118,36 @@ export function Navigation() {
                 ) : (
                   <Menu className="w-6 h-6" />
                 )}
-              </Button>
+              </button>
             </div>
           </div>
         </div>
 
         {/* Mobile Menu */}
         {isMobileMenuOpen && (
-          <div className="md:hidden border-t border-gray-200 py-4">
-            <div className="space-y-2">
+          <div className="md:hidden border-t border-slate-700 bg-slate-900/95 backdrop-blur-sm py-4">
+            <div className="space-y-2 px-4">
               {navigationItems.map((item) => (
                 <Link key={item.href} href={item.href}>
-                  <Button
-                    variant="ghost"
-                    className={`w-full justify-start ${
+                  <button
+                    className={`w-full text-left px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
                       item.active
-                        ? "text-primary-blue bg-blue-50"
-                        : "text-gray-700"
+                        ? "bg-primary-blue/20 text-primary-blue border border-primary-blue/30"
+                        : "text-slate-300 hover:text-white hover:bg-slate-800/60"
                     }`}
                     onClick={() => setIsMobileMenuOpen(false)}
                   >
                     {item.label}
-                  </Button>
+                  </button>
                 </Link>
               ))}
-              <div className="border-t border-gray-200 pt-4 mt-4">
+              <div className="border-t border-slate-700 pt-4 mt-4">
                 <div className="flex items-center justify-between px-4">
                   <div>
-                    <p className="font-medium text-gray-900">
+                    <p className="font-medium text-white">
                       {user?.username || "John Doe"}
                     </p>
-                    <p className="text-sm text-gray-600">Legal Professional</p>
+                    <p className="text-sm text-slate-400">Legal Professional</p>
                   </div>
                   <TrustIndicator score={user?.trustScore || 85} />
                 </div>
