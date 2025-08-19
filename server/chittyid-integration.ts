@@ -21,40 +21,45 @@ export interface ChittyIDGeneration {
 }
 
 export class ChittyIDService {
-  private readonly baseUrl: string;
+  private readonly mothershipUrl: string;
+  private readonly apiKey: string;
+  private readonly nodeId: string;
+  private readonly localServiceUrl: string;
   private readonly fallbackMode: boolean;
 
-  constructor(baseUrl: string = 'http://localhost:3000') {
-    this.baseUrl = baseUrl;
-    this.fallbackMode = !process.env.CHITTYID_API_URL; // Use fallback if no API URL provided
+  constructor() {
+    this.mothershipUrl = process.env.CHITTYID_MOTHERSHIP_URL || 'https://id.chitty.cc';
+    this.apiKey = process.env.CHITTYID_API_KEY || 'dev-key';
+    this.nodeId = process.env.CHITTYID_NODE_ID || '01';
+    this.localServiceUrl = process.env.CHITTYID_LOCAL_URL || 'http://localhost:3000';
+    this.fallbackMode = !process.env.CHITTYID_API_URL && !process.env.CHITTYID_LOCAL_URL;
   }
 
   async validateChittyID(chittyId: string): Promise<ChittyIDValidation> {
-    // Use fallback if ChittyID service is not configured
-    if (this.fallbackMode) {
-      return this.validateChittyIDFallback(chittyId);
-    }
-
+    // Try local service first
     try {
-      const apiUrl = process.env.CHITTYID_API_URL || this.baseUrl;
-      const response = await fetch(`${apiUrl}/api/v1/validate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': process.env.CHITTYID_API_KEY ? `Bearer ${process.env.CHITTYID_API_KEY}` : '',
-        },
-        body: JSON.stringify({ chittyId }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`ChittyID API error: ${response.status}`);
+      const response = await fetch(`${this.localServiceUrl}/api/chittyid/${chittyId}`);
+      if (response.ok) {
+        const data = await response.json();
+        return {
+          chittyId,
+          valid: true,
+          details: {
+            timestamp: new Date().toISOString(),
+            vertical: chittyId.split('-')[2] || 'VER',
+            nodeId: this.nodeId,
+            jurisdiction: "USA",
+            trustScore: data.trustScore,
+            trustLevel: data.trustLevel
+          }
+        };
       }
-
-      return await response.json() as ChittyIDValidation;
     } catch (error) {
-      console.error('ChittyID validation failed, using fallback:', error);
-      return this.validateChittyIDFallback(chittyId);
+      console.log('Local ChittyID validation failed, using fallback:', error.message);
     }
+
+    // Fallback to pattern validation
+    return this.validateChittyIDFallback(chittyId);
   }
 
   private validateChittyIDFallback(chittyId: string): ChittyIDValidation {
@@ -75,31 +80,63 @@ export class ChittyIDService {
   }
 
   async generateChittyID(vertical: string = 'VER'): Promise<ChittyIDGeneration> {
-    // Use fallback if ChittyID service is not configured
-    if (this.fallbackMode) {
-      return this.generateChittyIDFallback(vertical);
-    }
-
+    // Try local ChittyID service first
     try {
-      const apiUrl = process.env.CHITTYID_API_URL || this.baseUrl;
-      const response = await fetch(`${apiUrl}/api/v1/generate`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': process.env.CHITTYID_API_KEY ? `Bearer ${process.env.CHITTYID_API_KEY}` : '',
-        },
-        body: JSON.stringify({ vertical }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`ChittyID API error: ${response.status}`);
-      }
-
-      return await response.json() as ChittyIDGeneration;
+      const chittyIdCode = await this.generateFromService('identity', 'person', { vertical });
+      return {
+        chittyId: chittyIdCode,
+        displayFormat: chittyIdCode,
+        timestamp: new Date().toISOString(),
+        vertical: vertical.toUpperCase(),
+        valid: true
+      };
     } catch (error) {
-      console.error('ChittyID generation failed, using fallback:', error);
+      console.log('Local ChittyID service unavailable, using fallback:', error.message);
       return this.generateChittyIDFallback(vertical);
     }
+  }
+
+  private async generateFromService(domain: string = 'identity', type: string = 'person', attrs: any = {}): Promise<string> {
+    // Try local service first, then mothership
+    const urls = [this.localServiceUrl, this.mothershipUrl];
+    
+    for (const baseUrl of urls) {
+      try {
+        console.log(`🔗 Attempting ChittyID generation at ${baseUrl}`);
+        
+        const response = await fetch(`${baseUrl}/api/identity/create`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${this.apiKey}`,
+            'X-Node-ID': this.nodeId
+          },
+          body: JSON.stringify({
+            domain,
+            type,
+            attrs,
+            ctx: {
+              source: 'chittyverify',
+              timestamp: new Date().toISOString(),
+              nodeId: this.nodeId
+            }
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status} ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        return data.chittyId || data.id;
+        
+      } catch (error) {
+        console.log(`Failed to connect to ${baseUrl}:`, error.message);
+        continue;
+      }
+    }
+    
+    throw new Error('All ChittyID services unavailable');
   }
 
   private generateChittyIDFallback(vertical: string = 'VER'): ChittyIDGeneration {
@@ -118,36 +155,45 @@ export class ChittyIDService {
     };
   }
 
-  async healthCheck(): Promise<{ status: string; service: string; mode?: string }> {
-    if (this.fallbackMode) {
-      return {
-        status: 'operational',
-        service: 'ChittyID',
-        mode: 'fallback'
-      };
-    }
-
+  async healthCheck(): Promise<{ status: string; service: string; mode?: string; mothership?: string }> {
+    // Check local service first
     try {
-      const apiUrl = process.env.CHITTYID_API_URL || this.baseUrl;
-      const response = await fetch(`${apiUrl}/health`, {
-        headers: {
-          'Authorization': process.env.CHITTYID_API_KEY ? `Bearer ${process.env.CHITTYID_API_KEY}` : '',
-        },
-      });
-      
-      if (!response.ok) {
-        throw new Error(`Health check failed: ${response.status}`);
+      const response = await fetch(`${this.localServiceUrl}/api/chittyid/mothership/status`);
+      if (response.ok) {
+        const data = await response.json();
+        return {
+          status: 'operational',
+          service: 'ChittyID',
+          mode: 'local',
+          mothership: data.mothership || 'id.chitty.cc'
+        };
       }
-
-      return await response.json() as { status: string; service: string };
     } catch (error) {
-      console.warn('ChittyID health check failed, using fallback mode:', error);
-      return {
-        status: 'operational',
-        service: 'ChittyID',
-        mode: 'fallback'
-      };
+      console.log('Local ChittyID service not available');
     }
+
+    // Check mothership directly
+    try {
+      const response = await fetch(`${this.mothershipUrl}/health`);
+      if (response.ok) {
+        return {
+          status: 'operational',
+          service: 'ChittyID',
+          mode: 'mothership',
+          mothership: 'id.chitty.cc'
+        };
+      }
+    } catch (error) {
+      console.log('ChittyID mothership not available');
+    }
+
+    // Fallback mode
+    return {
+      status: 'operational',
+      service: 'ChittyID',
+      mode: 'fallback',
+      mothership: 'offline'
+    };
   }
 }
 
