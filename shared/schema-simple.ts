@@ -65,3 +65,23 @@ export const insertMasterEvidenceSchema = createInsertSchema(masterEvidence).omi
   createdAt: true,
   updatedAt: true,
 });
+
+// Simple Atomic Facts table
+export const atomicFacts = pgTable("atomic_facts", {
+  id: varchar("id").primaryKey(),
+  parentDocument: varchar("parent_document").notNull(),
+  factType: varchar("fact_type").notNull(),
+  factContent: text("fact_content").notNull(),
+  confidence: decimal("confidence").default("0.0"),
+  source: varchar("source"),
+  extractedAt: timestamp("extracted_at").default(sql`now()`),
+  createdAt: timestamp("created_at").default(sql`now()`)
+});
+
+export type AtomicFact = typeof atomicFacts.$inferSelect;
+export type InsertAtomicFact = typeof atomicFacts.$inferInsert;
+
+export const insertAtomicFactSchema = createInsertSchema(atomicFacts).omit({
+  id: true,
+  createdAt: true,
+});

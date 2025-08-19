@@ -80,7 +80,7 @@ export function QuickShareButton({
         evidenceId,
         ...data,
         expiresAt: expirationDate?.toISOString(),
-      });
+      }) as ShareResponse;
       return response;
     },
     onSuccess: (response: ShareResponse) => {

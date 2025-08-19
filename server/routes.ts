@@ -3,7 +3,8 @@ import { createServer, type Server } from "http";
 import { storage } from "./storage-simple";
 import { chittyIdService } from "./chittyid-integration";
 import { createChittyBeaconRouter } from "./chittybeacon";
-import { insertCaseSchema, insertMasterEvidenceSchema } from "../shared/schema-simple";
+import { sharingService } from "./sharing-service";
+import { insertCaseSchema, insertMasterEvidenceSchema, insertAtomicFactSchema } from "../shared/schema-simple";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
@@ -202,6 +203,55 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Evidence upload error:', error);
       res.status(500).json({ message: "Failed to upload evidence" });
+    }
+  });
+
+  // Evidence Sharing API Routes
+  app.post('/api/evidence/share', async (req, res) => {
+    try {
+      const shareRequest = {
+        evidenceId: req.body.evidenceId,
+        recipientEmail: req.body.recipientEmail,
+        recipientChittyId: req.body.recipientChittyId,
+        accessLevel: req.body.accessLevel,
+        expiresAt: req.body.expiresAt,
+        maxAccess: req.body.maxAccess,
+        requirePin: req.body.requirePin,
+        securityPin: req.body.securityPin,
+        personalMessage: req.body.personalMessage,
+        sharedBy: 'CH-2025-VER-0001-A' // In production, get from authenticated user
+      };
+
+      const shareResponse = await sharingService.createEvidenceShare(shareRequest);
+      res.json(shareResponse);
+    } catch (error) {
+      console.error('Evidence sharing error:', error);
+      res.status(500).json({ error: error instanceof Error ? error.message : 'Failed to create share' });
+    }
+  });
+
+  app.get('/api/share/:shareId', async (req, res) => {
+    try {
+      const { shareId } = req.params;
+      const { pin } = req.query;
+
+      const accessResult = await sharingService.verifyShareAccess(shareId, pin as string);
+      
+      if (!accessResult.valid) {
+        return res.status(403).json({ reason: accessResult.reason });
+      }
+
+      // Log the access attempt
+      await sharingService.logShareAccess(shareId, 'view', true);
+
+      res.json({
+        evidence: accessResult.evidence,
+        share: accessResult.share,
+        accessGranted: true
+      });
+    } catch (error) {
+      console.error('Share access error:', error);
+      res.status(500).json({ error: 'Failed to access shared evidence' });
     }
   });
 
