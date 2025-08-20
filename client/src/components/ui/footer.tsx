@@ -114,10 +114,8 @@ export function Footer() {
                       {link.label}
                     </a>
                   ) : (
-                    <Link href={link.href}>
-                      <a className="hover:text-white transition-colors cursor-pointer">
-                        {link.label}
-                      </a>
+                    <Link href={link.href} className="hover:text-white transition-colors cursor-pointer">
+                      {link.label}
                     </Link>
                   )}
                 </li>
@@ -133,20 +131,14 @@ export function Footer() {
               © {currentYear} ChittyOS. All rights reserved.
             </p>
             <div className="flex items-center space-x-6 text-sm">
-              <Link href="/privacy">
-                <a className="text-blue-200 hover:text-white transition-colors cursor-pointer">
-                  Privacy Policy
-                </a>
+              <Link href="/privacy" className="text-blue-200 hover:text-white transition-colors cursor-pointer">
+                Privacy Policy
               </Link>
-              <Link href="/terms">
-                <a className="text-blue-200 hover:text-white transition-colors cursor-pointer">
-                  Terms of Service
-                </a>
+              <Link href="/terms" className="text-blue-200 hover:text-white transition-colors cursor-pointer">
+                Terms of Service
               </Link>
-              <Link href="/security">
-                <a className="text-blue-200 hover:text-white transition-colors cursor-pointer">
-                  Security
-                </a>
+              <Link href="/security" className="text-blue-200 hover:text-white transition-colors cursor-pointer">
+                Security
               </Link>
               <span className="metallic-accent font-semibold">
                 Never Sh*tty™
