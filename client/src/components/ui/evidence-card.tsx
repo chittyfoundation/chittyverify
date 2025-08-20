@@ -16,7 +16,11 @@ interface EvidenceCardProps {
     subtype?: string;
     status: string;
     trustScore: number;
-    uploadedAt: string;
+    uploadTimestamp?: string;
+    uploadedAt?: string;
+    evidenceTier?: string;
+    verifyStatus?: string;
+    metadata?: Record<string, any>;
     facts?: Record<string, any>;
     analysis?: {
       confidence?: number;
@@ -77,37 +81,37 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
   };
 
   return (
-    <Card className="evidence-card hover-lift border border-gray-100">
-      <CardContent className="p-6">
+    <Card className="bg-card border border-border hover:border-primary/20 transition-all duration-300 hover:shadow-lg">
+      <CardContent className="p-8">
         {/* Header */}
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center space-x-3">
-            <div className={`w-12 h-12 ${getEvidenceTypeColor(evidence.type)} rounded-lg flex items-center justify-center`}>
-              <i className={`fas ${getEvidenceIcon(evidence.type)} text-white text-xl`}></i>
+        <div className="flex items-start justify-between mb-6">
+          <div className="flex items-center space-x-4">
+            <div className="w-14 h-14 bg-primary/10 rounded-xl flex items-center justify-center">
+              <i className={`fas ${getEvidenceIcon(evidence.type)} text-primary text-xl`}></i>
             </div>
             <div>
-              <h3 className="font-semibold text-gray-900">{evidence.title}</h3>
-              <p className="text-sm text-gray-600">{evidence.artifactId}</p>
+              <h3 className="text-xl font-semibold text-card-foreground mb-1">{evidence.title}</h3>
+              <p className="text-sm text-muted-foreground font-mono">{evidence.artifactId}</p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
-            <Badge className={`${getStatusColor(evidence.status)} font-medium`}>
+          <div className="flex items-center space-x-3">
+            <Badge className={`${getStatusColor(evidence.status)} font-medium px-3 py-1`}>
               {getStatusIcon(evidence.status)}
-              <span className="ml-1 capitalize">{evidence.status}</span>
+              <span className="ml-2 capitalize">{evidence.status}</span>
             </Badge>
             <TrustIndicator score={evidence.trustScore} />
           </div>
         </div>
 
         {/* Details Grid */}
-        <div className="grid grid-cols-2 gap-4 mb-4">
-          <div className="bg-gray-50 rounded-lg p-3">
-            <p className="text-xs text-gray-600 uppercase tracking-wide">Upload Date</p>
-            <p className="font-medium">{new Date(evidence.uploadedAt).toLocaleDateString()}</p>
+        <div className="grid grid-cols-2 gap-4 mb-6">
+          <div className="bg-muted/50 rounded-lg p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Upload Date</p>
+            <p className="font-semibold text-card-foreground">{new Date(evidence.uploadTimestamp || evidence.uploadedAt || new Date()).toLocaleDateString()}</p>
           </div>
-          <div className="bg-gray-50 rounded-lg p-3">
-            <p className="text-xs text-gray-600 uppercase tracking-wide">Type</p>
-            <p className="font-medium capitalize">{evidence.type.replace('_', ' ')}</p>
+          <div className="bg-muted/50 rounded-lg p-4">
+            <p className="text-xs text-muted-foreground uppercase tracking-wide mb-1">Type</p>
+            <p className="font-semibold text-card-foreground capitalize">{evidence.type.replace('_', ' ')}</p>
           </div>
         </div>
 
@@ -175,9 +179,9 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
         )}
 
         {/* Actions */}
-        <div className="flex space-x-2">
+        <div className="flex space-x-3">
           <Link href={`/evidence/${evidence.id}`} className="flex-1">
-            <Button className="w-full bg-primary-blue text-white hover:bg-blue-600 transition-colors text-sm font-medium">
+            <Button className="w-full bg-primary text-primary-foreground hover:bg-primary/90 h-11">
               <Eye className="w-4 h-4 mr-2" />
               View Details
             </Button>
@@ -186,13 +190,13 @@ export function EvidenceCard({ evidence }: EvidenceCardProps) {
             evidenceId={evidence.id}
             evidenceTitle={evidence.title}
             evidenceType={evidence.type}
-            size="sm"
+            size="default"
             variant="outline"
           />
           <Button 
             variant="outline" 
-            size="sm"
-            className="px-3"
+            size="default"
+            className="px-4 h-11"
           >
             <Download className="w-4 h-4" />
           </Button>

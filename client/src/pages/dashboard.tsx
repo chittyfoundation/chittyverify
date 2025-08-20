@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { Navigation } from "@/components/ui/navigation";
 import { Footer } from "@/components/ui/footer";
+import { Button } from "@/components/ui/button";
 import { OneClickAuthentication } from "@/components/authentication/OneClickAuthentication";
 import { EvidenceCard } from "@/components/ui/evidence-card";
 import ChittyBeaconWidget from "@/components/beacon/ChittyBeaconWidget";
@@ -41,63 +42,59 @@ export default function Dashboard() {
     <div className="min-h-screen bg-background">
       <Navigation />
       
-      {/* Hero Section */}
-      <section className="hero-section py-16 fade-in">
-        <div className="container-professional">
-          <div className="text-center relative z-10">
-            <div className="inline-flex items-center gap-4 mb-6">
-              <div className="w-14 h-14 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow">
-                <Shield className="w-7 h-7 text-white" />
+      {/* Clean Hero Section */}
+      <section className="py-20 border-b border-border/50">
+        <div className="container mx-auto px-6 max-w-6xl">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-4 mb-8">
+              <div className="w-16 h-16 rounded-2xl bg-primary flex items-center justify-center">
+                <Shield className="w-8 h-8 text-primary-foreground" />
               </div>
-              <div className="text-left">
-                <h1 className="text-5xl font-bold">
-                  <span className="text-white">Chitty</span>
-                  <span className="text-gradient-primary">Verify</span>
-                </h1>
-              </div>
+              <h1 className="text-6xl font-bold">
+                <span className="text-foreground">Chitty</span>
+                <span className="text-primary">Verify</span>
+              </h1>
             </div>
             
-            <p className="text-xl text-slate-300 mb-8 max-w-2xl mx-auto leading-relaxed">
-              Create immutable, court-ready evidence records with cryptographic proof
+            <p className="text-xl text-muted-foreground mb-12 max-w-3xl mx-auto">
+              Immutable evidence verification with cryptographic proof - securing legal documents before blockchain commitment
             </p>
             
-            <div className="flex justify-center">
-              <OneClickAuthentication />
-            </div>
+            <OneClickAuthentication />
           </div>
         </div>
       </section>
 
       {/* ChittyBeacon Integration */}
-      <section className="py-12">
-        <div className="container-professional">
+      <section className="py-16">
+        <div className="container mx-auto px-6 max-w-6xl">
           <ChittyBeaconWidget />
         </div>
       </section>
 
       {/* Evidence Dashboard */}
-      <section className="py-12">
-        <div className="container-professional">
-          <div className="flex items-center justify-between mb-8">
-            <h2 className="text-3xl font-bold text-white">Your Evidence</h2>
-            <button className="btn-primary flex items-center gap-2">
-              <Zap className="w-5 h-5" />
-              New Evidence
-            </button>
+      <section className="py-16">
+        <div className="container mx-auto px-6 max-w-6xl">
+          <div className="flex items-center justify-between mb-12">
+            <h2 className="text-4xl font-bold text-foreground">Evidence Vault</h2>
+            <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+              <Zap className="w-5 h-5 mr-2" />
+              Upload Evidence
+            </Button>
           </div>
 
           {evidenceLoading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="professional-card p-8 animate-pulse">
-                  <div className="w-full h-32 bg-muted rounded-lg mb-4"></div>
-                  <div className="w-3/4 h-4 bg-muted rounded mb-2"></div>
-                  <div className="w-1/2 h-3 bg-muted rounded"></div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              {[...Array(4)].map((_, i) => (
+                <div key={i} className="bg-card border border-border rounded-xl p-8 animate-pulse">
+                  <div className="w-full h-32 bg-muted rounded-lg mb-6"></div>
+                  <div className="w-3/4 h-6 bg-muted rounded mb-3"></div>
+                  <div className="w-1/2 h-4 bg-muted rounded"></div>
                 </div>
               ))}
             </div>
           ) : evidence && Array.isArray(evidence) && evidence.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               {evidence.map((item: any, index: number) => (
                 <EvidenceCard 
                   key={item.id} 
@@ -106,19 +103,20 @@ export default function Dashboard() {
               ))}
             </div>
           ) : (
-            <div className="professional-card p-12 text-center">
-              <div className="flex justify-center mb-6">
-                <div className="w-16 h-16 rounded-2xl bg-gradient-card flex items-center justify-center">
-                  <FileCheck className="w-8 h-8 text-primary-blue" />
+            <div className="bg-card border border-border rounded-xl p-16 text-center">
+              <div className="flex justify-center mb-8">
+                <div className="w-20 h-20 rounded-2xl bg-primary/10 flex items-center justify-center">
+                  <FileCheck className="w-10 h-10 text-primary" />
                 </div>
               </div>
-              <h3 className="text-2xl font-bold text-white mb-4">No Evidence Yet</h3>
-              <p className="text-lg text-slate-400 mb-8">
-                Upload your first piece of evidence to start building your verified legal record.
+              <h3 className="text-3xl font-bold text-foreground mb-4">Ready to Verify Evidence</h3>
+              <p className="text-lg text-muted-foreground mb-10 max-w-lg mx-auto">
+                Upload your first document to create immutable verification records with cryptographic proof
               </p>
-              <button className="btn-primary">
+              <Button className="bg-primary text-primary-foreground hover:bg-primary/90">
+                <Zap className="w-5 h-5 mr-2" />
                 Upload First Evidence
-              </button>
+              </Button>
             </div>
           )}
         </div>
